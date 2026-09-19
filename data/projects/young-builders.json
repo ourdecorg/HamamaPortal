@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "young-builders",
+    "slug": "young-builders",
+
+    "name": {
+      "default": "בנאים צעירים",
+      "translations": { "he": "בנאים צעירים", "en": "Young Builders" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "בני נוער שלומדים על ידי זה שהם בונים משהו אמיתי לקהילה.",
+        "en": "Teenagers learning by building something real for their community."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "קבוצות של חמישה עד שבעה בני נוער בוחרות בעיה אמיתית בשכונה — כיכר מוזנחת, קשישים בודדים, אפליקציה שחסרה — ובונות פתרון בליווי מבוגר אחד. לא שיעור, לא חוג: פרויקט שנגמר במשהו שאפשר לראות.",
+        "en": "Groups of five to seven teenagers pick a real neighborhood problem — a neglected square, lonely elderly neighbors, a missing app — and build a solution with one adult alongside. Not a class, not a club: a project that ends with something you can see."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "דור שגדל בידיעה שהוא לא רק צרכן של העולם, אלא מי שיכול לשנות בו משהו — כבר בגיל ארבע־עשרה.",
+          "en": "A generation that grows up knowing it isn't just a consumer of the world, but can change something in it — already at fourteen."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "בית הספר מלמד הרבה, אבל מעט מאוד מהלמידה נגמרת בשינוי אמיתי בעולם. בני נוער רבים מרגישים שמה שהם עושים לא משנה לאף אחד.",
+          "en": "School teaches a lot, but very little of the learning ends in real change in the world. Many teenagers feel that what they do doesn't matter to anyone."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שכל נער ונערה יעברו לפחות פרויקט אחד שבו בנו משהו שמישהו אחר משתמש בו.",
+        "en": "For every teenager to go through at least one project in which they built something someone else uses."
+      }
+    },
+
+    "domains": ["education", "communities", "technology"],
+
+    "status": { "lifecycle_stage": "pilot", "activity_status": "active" },
+
+    "geography": {
+      "scope": "local",
+      "place": { "translations": { "he": "באר שבע", "en": "Be'er Sheva" } }
+    },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "גיא פרידמן",
+          "role": { "translations": { "he": "מפתח התוכנית", "en": "Program lead" } }
+        },
+        {
+          "name": "סמאר עבאס",
+          "role": { "translations": { "he": "קשר עם בתי ספר ותנועות נוער", "en": "School & youth-movement liaison" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "mentorship",
+        "title": {
+          "translations": {
+            "he": "מנטורים ומנטוריות מתחום הטכנולוגיה והעיצוב שיפגשו נוער פעם בשבועיים",
+            "en": "Tech and design mentors to meet with teens every two weeks"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "לא צריך להיות מורה. צריך להיות מישהו שמוכן להקשיב לרעיון של בת חמש־עשרה, לשאול שאלה טובה, ולהראות איך עושים משהו קטן שעובד.",
+            "en": "You don't need to be a teacher. You need to be someone willing to listen to a fifteen-year-old's idea, ask a good question, and show how to make something small that works."
+          }
+        },
+        "keywords": ["mentors", "teens", "youth", "tech", "design", "volunteers", "guidance", "professionals"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "space",
+        "title": {
+          "translations": {
+            "he": "חלל עבודה בערבים לקבוצה של כ-15 בני נוער",
+            "en": "An evening workspace for a group of about 15 teens"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "מקום עם שולחנות גדולים ויכולת להשאיר חצי־גמור עד המפגש הבא. עדיף סדנה או מקום עם כלים.",
+            "en": "A place with big tables where things can be left half-finished until the next session. A workshop or a place with tools is best."
+          }
+        },
+        "keywords": ["space", "workshop", "evenings", "teens", "youth", "room", "tools"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "קשר עם שישה בתי ספר ותנועות נוער (כ-120 בני נוער)",
+            "en": "Connections with six schools and youth movements (about 120 teens)"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "בני נוער שמחפשים משהו אמיתי לעשות ורגילים לקחת יוזמה. מתאים למיזמים שרוצים משוב כן ממי שהם משתמשים עתידיים.",
+            "en": "Teenagers looking for something real to do, used to taking initiative. Good for initiatives that want honest feedback from future users."
+          }
+        },
+        "keywords": ["youth", "teens", "schools", "participants", "feedback", "community"]
+      },
+      {
+        "id": "offer-2",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "תוכנית לימודים של פרויקטים אמיתיים עבור הקהילה",
+            "en": "A curriculum of real projects for the community"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "שמונה מפגשים שמובילים מרעיון ועד משהו שנמסר למשתמש אמיתי. נכתבה יחד עם מורים ובני נוער.",
+            "en": "Eight sessions leading from an idea to something handed to a real user. Written together with teachers and teens."
+          }
+        },
+        "keywords": ["curriculum", "project-based", "learning", "teens", "education", "playbook", "circles"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["mentoring", "pilot", "community", "co_creation"] },
+
+    "links": { "website": "https://example.org/demo/young-builders", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-14",
+      "is_demo": true
+    }
+  }
+}

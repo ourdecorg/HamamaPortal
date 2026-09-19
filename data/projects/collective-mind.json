@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "collective-mind",
+    "slug": "collective-mind",
+
+    "name": {
+      "default": "דעת קבוצה",
+      "translations": { "he": "דעת קבוצה", "en": "Group Mind" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "שיחה שבה גם מי שמדבר בשקט משפיע על ההחלטה.",
+        "en": "A conversation where even the quiet voice shapes the decision."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "שיטת דיון בת 90 דקות וכלי דיגיטלי קליל שעוזרים לקבוצות לקבל החלטות יחד: כל אחד כותב לפני שמדברים, רעיונות נבחנים בלי שם, ורק אחר כך מצביעים.",
+        "en": "A 90-minute discussion method and a light digital tool that help groups decide together: everyone writes before speaking, ideas are weighed anonymously, and only then does the group vote."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "קבוצות — ועד בית, מועצת תלמידים, צוות — שמקבלות החלטות טובות יותר מכל אחד מחבריהן לבד.",
+          "en": "Groups — a building committee, a student council, a team — that make better decisions than any of their members alone."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "בדיוני קבוצה, מי שמדבר ראשון וחזק קובע, והרעיון הכי טוב לפעמים לא נאמר בכלל. אנחנו מפסידים חכמה שכבר נמצאת בחדר.",
+          "en": "In group discussions, whoever speaks first and loudest decides, and the best idea sometimes isn't said at all. We lose wisdom that's already in the room."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שכל קבוצה תוכל להריץ דיון הוגן בלי מנחה מקצועי, עם שיטה שאפשר ללמוד בשעה.",
+        "en": "For any group to be able to run a fair discussion without a professional facilitator, using a method that can be learned in an hour."
+      }
+    },
+
+    "domains": ["collective_intelligence", "collaboration", "technology"],
+
+    "status": { "lifecycle_stage": "prototype", "activity_status": "active" },
+
+    "geography": { "scope": "remote" },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "איתי ברק",
+          "role": { "translations": { "he": "פיתוח השיטה והכלי", "en": "Method & tool development" } }
+        },
+        {
+          "name": "ליה אשכנזי",
+          "role": { "translations": { "he": "הנחיית קבוצות", "en": "Group facilitation" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "קבוצות עם החלטה אמיתית שצריכה להתקבל, לנסות עליהן את השיטה",
+            "en": "Groups with a real decision to make, to try the method on"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "ניסויים בחדר עם חברים לא מלמדים מספיק. אנחנו צריכים קבוצות שיש להן החלטה שחשובה להן — תקציב, כלל משותף, בחירה — ונכונות לנסות דרך אחרת לקבל אותה.",
+            "en": "Experiments in a room with friends don't teach enough. We need groups with a decision that matters to them — a budget, a shared rule, a choice — and a willingness to try a different way of making it."
+          }
+        },
+        "keywords": ["deliberation", "decisions", "groups", "residents", "pilot", "input"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "research",
+        "title": {
+          "translations": {
+            "he": "הערכה בלתי תלויה: האם קבוצות מחליטות טוב יותר בשיטה הזו?",
+            "en": "Independent evaluation: do groups decide better with this method?"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "אנחנו מוטים — אנחנו אוהבים את השיטה. מחפשים חוקרים שיציבו לנו שאלות קשות ויבדקו מה באמת קורה.",
+            "en": "We're biased — we love the method. We're looking for researchers who will ask us hard questions and check what really happens."
+          }
+        },
+        "keywords": ["research", "evaluation", "impact", "decisions", "groups"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "facilitation",
+        "title": {
+          "translations": {
+            "he": "שיטת דיון מובנית בת 90 דקות שנותנת מקום לכל קול",
+            "en": "A structured 90-minute discussion method that makes room for every voice"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "מערך מפגש מוכן, עם דף הנחיה, כללי משחק ותרגילי פתיחה. נוסה בשמונה קבוצות בגדלים שונים.",
+            "en": "A ready meeting outline with a facilitator's sheet, ground rules and opening exercises. Tested with eight groups of different sizes."
+          }
+        },
+        "keywords": ["deliberation", "decisions", "groups", "residents", "facilitation", "input", "structured", "learning"]
+      },
+      {
+        "id": "offer-2",
+        "type": "technology",
+        "title": {
+          "translations": {
+            "he": "כלי דיגיטלי קליל לאיסוף הצעות והצבעות מנומקות",
+            "en": "A light digital tool for collecting proposals and reasoned votes"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כלי אינטרנטי פשוט, בלי הרשמה, שאפשר להפעיל בכל מפגש — פיזי או מקוון.",
+            "en": "A simple web tool, no sign-up, that can run in any meeting — in person or online."
+          }
+        },
+        "keywords": ["deliberation", "input", "tool", "groups", "decisions", "coordination"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["experiment", "pilot", "research", "co_creation"] },
+
+    "links": { "website": "https://example.org/demo/collective-mind", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-08-29",
+      "is_demo": true
+    }
+  }
+}

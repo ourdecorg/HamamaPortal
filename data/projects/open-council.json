@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "open-council",
+    "slug": "open-council",
+
+    "name": {
+      "default": "מועצה פתוחה",
+      "translations": { "he": "מועצה פתוחה", "en": "Open Council" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "להבין על מה מחליטים בעירייה — לפני שמחליטים.",
+        "en": "Understanding what the city council decides — before it decides."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "אנחנו הופכים תקציבים, פרוטוקולים והחלטות של רשויות מקומיות לדפים שאפשר לקרוא בעשר דקות, ופותחים דרך לתושבים להגיב לפני ההצבעה, לא אחריה.",
+        "en": "We turn local authority budgets, minutes and decisions into pages you can read in ten minutes, and open a way for residents to respond before the vote, not after."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "עיר שבה תושב רגיל יודע מה עומד על הפרק, יכול להשפיע — ומרגיש שמישהו הקשיב.",
+          "en": "A city where an ordinary resident knows what's on the table, can influence it — and feels someone listened."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "החלטות שמשפיעות על חיי היומיום מתקבלות במסמכים ארוכים ובשפה שקשה להבין. עד שתושבים שומעים עליהן, כבר מאוחר.",
+          "en": "Decisions that shape daily life are made in long documents and hard-to-read language. By the time residents hear about them, it's too late."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שבכל רשות מקומית יהיה מקום אחד שבו אפשר להבין את התקציב וההחלטות הקרובות, ולהגיב אליהן.",
+        "en": "For every local authority to have one place where the budget and upcoming decisions can be understood and responded to."
+      }
+    },
+
+    "domains": ["civic_innovation", "collective_intelligence", "technology"],
+
+    "status": { "lifecycle_stage": "pilot", "activity_status": "active" },
+
+    "geography": {
+      "scope": "local",
+      "place": { "translations": { "he": "באר שבע", "en": "Be'er Sheva" } }
+    },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "אלינור בן־דוד",
+          "role": { "translations": { "he": "שותפויות עם רשויות", "en": "Partnerships with authorities" } }
+        },
+        {
+          "name": "נדב סגל",
+          "role": { "translations": { "he": "נתונים ותוכן", "en": "Data & content" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "skills",
+        "title": {
+          "translations": {
+            "he": "אנשי AI שיעזרו לסכם פרוטוקולים של מועצת העיר בצורה אמינה",
+            "en": "AI practitioners to help summarize city council minutes reliably"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כל חודש מצטברים עשרות עמודי פרוטוקולים. מחפשים אנשים שיודעים לעבוד עם מודלי שפה ויעזרו לנו לבנות תהליך סיכום שבו אדם תמיד בודק לפני שמפרסמים.",
+            "en": "Dozens of pages of minutes pile up each month. We're looking for people who know language models to help us build a summarization process where a person always checks before publishing."
+          }
+        },
+        "keywords": ["ai", "summarization", "volunteers", "engineers", "text", "documents", "verification"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "facilitation",
+        "title": {
+          "translations": {
+            "he": "שיטה לאסוף מתושבים תגובות מנומקות, לא רק לייקים",
+            "en": "A method for gathering reasoned responses from residents, not just likes"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כשפתחנו הצבעה פשוטה, הקולות הרמים ביותר ניצחו. אנחנו מחפשים שיטת דיון מובנית לקבוצות של תושבים, כזו שנותנת מקום גם לשקטים.",
+            "en": "When we opened a simple vote, the loudest voices won. We're looking for a structured discussion method for groups of residents, one that makes room for the quiet ones too."
+          }
+        },
+        "keywords": ["deliberation", "decisions", "residents", "groups", "facilitation", "input", "structured"],
+        "status": "open"
+      },
+      {
+        "id": "need-3",
+        "type": "design",
+        "title": {
+          "translations": {
+            "he": "מי שיודע להפוך תקציב עירוני לוויזואליזציה שכל אחד מבין",
+            "en": "Someone who can turn a municipal budget into a visualization anyone can read"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "יש לנו הנתונים, חסר סיפור חזותי. מעצבת או מעצב נתונים שיעזרו לנו להראות לאן הולך הכסף, בעברית פשוטה.",
+            "en": "We have the data; the visual story is missing. A data designer to help us show where the money goes, in plain Hebrew."
+          }
+        },
+        "keywords": ["budget", "visualization", "data", "design", "storytelling"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "data",
+        "title": {
+          "translations": {
+            "he": "נתוני תקציב מסודרים משלוש רשויות מקומיות",
+            "en": "Cleaned-up budget data from three local authorities"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "שלוש שנות תקציב מנוקות ומתויגות, פתוחות לשימוש חוזר. מתאים למחקר, ללימוד ולכלים אזרחיים.",
+            "en": "Three years of budgets, cleaned and tagged, open for reuse. Suitable for research, teaching and civic tools."
+          }
+        },
+        "keywords": ["budget", "data", "municipal", "open data", "research"]
+      },
+      {
+        "id": "offer-2",
+        "type": "partnership",
+        "title": {
+          "translations": {
+            "he": "קשר עבודה עם יחידות החדשנות של שתי עיריות",
+            "en": "A working relationship with the innovation units of two municipalities"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "אפשרות לנסות כלי או שיטה בהחלטה אמיתית של עירייה — עם אנשי קשר שמוכנים להקשיב, לא רק לחתום.",
+            "en": "A chance to try a tool or method on a real municipal decision — with contacts who are ready to listen, not just to sign."
+          }
+        },
+        "keywords": ["municipal", "city", "pilot", "decisions", "residents", "groups", "partnership", "organization", "workplace"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["pilot", "co_creation", "research", "resource_sharing"] },
+
+    "links": { "website": "https://example.org/demo/open-council", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-10",
+      "is_demo": true
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — an illustrative entry describing the Hamama portal as one of the initiatives in the ecosystem. Replace with the real profile when ready.",
+  "project": {
+    "id": "hamama",
+    "slug": "hamama",
+
+    "name": {
+      "default": "חממה",
+      "translations": { "he": "חממה", "en": "Hamama" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "תשתית לפעולה משותפת: מקום שבו מיזמי עתיד מוצאים זה את זה.",
+        "en": "Infrastructure for collective agency: a place where future-oriented initiatives find each other."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "פורטל שמראה מה מיזמים מנסים לשנות, מה הם צריכים ומה הם יכולים להציע — ומציע חיבורים אפשריים ביניהם. המערכת מציעה, אנשים מחליטים.",
+        "en": "A portal that shows what initiatives are trying to change, what they need and what they can offer — and suggests possible connections between them. The system suggests, people decide."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "מרחב שבו אף מיזם טוב לא נתקע רק בגלל שלא ידע שלמישהו אחר כבר יש את מה שחסר לו.",
+          "en": "A space where no good initiative gets stuck just because it didn't know someone else already has what it lacks."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "מיזמים רבים עובדים במקביל, בלי לדעת זה על זה. צרכים נשארים פתוחים ויכולות נשארות לא מנוצלות.",
+          "en": "Many initiatives work in parallel without knowing about each other. Needs stay open and capabilities stay unused."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שכל מיזם עתיד יוכל, תוך דקות, לגלות עם מי כדאי לדבר — ולמה.",
+        "en": "For every future-oriented initiative to be able to find, within minutes, who to talk to — and why."
+      }
+    },
+
+    "domains": ["collaboration", "collective_intelligence", "communities", "technology"],
+
+    "status": { "lifecycle_stage": "prototype", "activity_status": "active" },
+
+    "geography": { "scope": "national" },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "צוות חממה",
+          "role": { "translations": { "he": "טיפוח הקהילה והפורטל", "en": "Stewarding the community and portal" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "מיזמים שיסכימו לתאר צורך והצעה ולבדוק אם החיבורים שמוצעים באמת עוזרים",
+            "en": "Initiatives willing to describe a need and an offer and check whether the suggested connections really help"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כדי לדעת אם הפורטל שימושי צריך מיזמים אמיתיים שיעדכנו פרופיל, יראו איזה חיבורים הוצעו להם, ויגידו לנו בכנות מה עבד ומה לא.",
+            "en": "To know whether the portal is useful we need real initiatives that will update a profile, see which connections were suggested to them, and honestly tell us what worked and what didn't."
+          }
+        },
+        "keywords": ["initiatives", "projects", "feedback", "connections", "pilot", "community", "groups"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "facilitation",
+        "title": {
+          "translations": {
+            "he": "מנחות ומנחים שיעזרו להפוך חיבור מוצע לשיחת היכרות טובה",
+            "en": "Facilitators who can help turn a suggested connection into a good introduction"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "חיבור על המסך הוא רק התחלה. מחפשים אנשים עם ניסיון בהנחיית שיחות ראשונות בין קבוצות שלא מכירות.",
+            "en": "A connection on screen is only a start. We're looking for people with experience facilitating first conversations between groups who don't know each other."
+          }
+        },
+        "keywords": ["facilitation", "introductions", "connections", "groups", "mentoring", "learning"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "שפה משותפת לתיאור צורך והצעה, ומיפוי ראשוני של מיזמי עתיד",
+            "en": "A shared language for describing a need and an offer, and an initial map of future-oriented initiatives"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "מבנה פשוט (JSON) לתיאור מיזם, מה הוא מנסה לשנות, מה הוא צריך ומה הוא מציע. אפשר לאמץ אותו גם מחוץ לפורטל.",
+            "en": "A simple structure (JSON) for describing an initiative, what it's trying to change, what it needs and what it offers. It can be adopted outside the portal as well."
+          }
+        },
+        "keywords": ["mapping", "needs", "offers", "projects", "taxonomy", "open data", "data"]
+      },
+      {
+        "id": "offer-2",
+        "type": "partnership",
+        "title": {
+          "translations": {
+            "he": "מפגשי היכרות חודשיים בין מיזמים שהפורטל זיהה כרלוונטיים זה לזה",
+            "en": "Monthly introduction sessions between initiatives the portal identified as relevant to each other"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כל חודש נפגשים שניים־שלושה מיזמים לשיחה קצרה, בליווי אדם שמכיר את שני הצדדים.",
+            "en": "Each month two or three initiatives meet for a short conversation, accompanied by a person who knows both sides."
+          }
+        },
+        "keywords": ["introductions", "connections", "projects", "meetups", "pilot"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["co_creation", "experiment", "community", "knowledge_exchange"] },
+
+    "links": { "website": null, "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-16",
+      "is_demo": true
+    }
+  }
+}

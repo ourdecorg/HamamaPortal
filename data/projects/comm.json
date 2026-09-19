@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "_comment": "Communities App — imported from a supplied JSON. review_status is 'draft' (not shown in the portal) until the project verifies its details. Fields the portal does not read yet (people.founders, relationships, portal.hamama_badge, portal.data_quality) are kept as-is.",
+  "project": {
+    "id": "comm",
+    "slug": "comm",
+    "name": {
+      "default": "Communities App",
+      "translations": { "en": "Communities App", "he": "אפליקצית קהילות" }
+    },
+    "tagline": {
+      "translations": {
+        "en": "A platform for communities to organize, coordinate, and grow together.",
+        "he": "פלטפורמה לקהילות להתארגנות, תיאום וצמיחה משותפת."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "en": "Communities is an app that helps groups of people organize around shared goals, coordinate activities, and manage collective life together.",
+        "he": "קהילות היא אפליקציה שעוזרת לקבוצות אנשים להתארגן סביב מטרות משותפות, לתאם פעילויות ולנהל חיים קהילתיים ביחד."
+      }
+    },
+    "vision": {
+      "future_world": {
+        "translations": {
+          "en": "Imagine a world where people who are profoundly different from one another don't just get along - they thrive together. Instead of power politics, where public discourse is mobilized to persuade others of the rightness of one's path, and in truth to control one another, the community focuses on cooperation around the basic needs of life.\n\nImagine a society where individual initiative flourishes in complete freedom, where people devote their energy to fulfilling one another's needs, and rely on one another to fulfill their own.\n\nImagine law that does not seek to rule, but to define the boundaries of morality - so as to enable this cooperation, without anyone treading on another.\n\nImagine a thriving community as a living social organism, with a community currency that flows like blood through the human body and gives life to the social body.\n\nCommunities is not just another tool for shared social organizing - it is a tool that supports a new developmental path for humanity.",
+          "he": "דמיינו עולם שבו אנשים שונים מאוד זה מזה, לא רק מסתדרים יחד - הם משגשגים יחד. במקום פוליטיקה כוחנית, שבה השיח הציבורי מגויס לשכנוע בצדקת הדרך ולמעשה לשליטה אחד על השני, הקהילה מתמקדת בשיתוף פעולה בצרכים הבסיסיים של החיים.\n\nדמיינו חברה שבה יוזמת הפרט פורחת בחירות מלאה, שבה אנשים רותמים את מרצם להגשים את צורכי הזולת, ונשענים על הזולת למימוש צורכיהם הם.\n\nדמיינו חוק שאינו בא לשלוט, אלא להגדיר את גבולות המוסר - כדי לאפשר את שיתוף הפעולה הזה, מבלי לדרוך איש על רעהו.\n\nדמיינו קהילה פורחת כאורגניזם חברתי חי, עם מטבע קהילתי שזורם כמו דם בגוף האדם ומקנה חיים לגוף החברתי.\n\nקהילות איננה עוד כלי להתארגנות חברתית משותפת - היא כלי תומך בדרך התפתחותית חדשה לאנושות."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "en": "Existing community-organizing tools - almost without exception - are built on the same underlying assumption: that if we just listen to each other politely and argue well enough, we can persuade whoever thinks differently, and arrive together at \"the right decision.\" That assumption is wrong at the root. Not because people are irrational, but because every rational system rests on foundational assumptions - and the assumptions that shape each person's worldview are buried deep inside them, inaccessible even to themselves, and differ fundamentally from person to person.\n\nAlongside this, in the real world: many democracies worldwide are under growing strain, and polarization between people who think differently keeps deepening. Paradoxically, ever since the invention of the internet - a tool that gave everyone nearly unlimited access to discourse, information, and communication - hatred between sides has only grown, not shrunk. If more discourse, more information, and more \"opportunity to understand the other side\" were the solution, it would already have happened. Something in the basic structure needs a real change of direction.",
+          "he": "כלי ההתארגנות הקהילתית הקיימים - כמעט בלי יוצא מן הכלל - בנויים על אותה הנחת יסוד: שאם רק נקשיב זה לזה בנימוס ונטען טוב מספיק, אפשר לשכנע את מי שחושב אחרת, ולהגיע יחד ל\"החלטה הנכונה\". ההנחה הזו שגויה מהיסוד. לא כי אנשים אינם רציונליים, אלא כי כל מערכת רציונלית נשענת על הנחות יסוד - וההנחות שמעצבות את תפיסת עולמו של כל אדם חבויות עמוק בתוכו, לא נגישות אפילו לו עצמו, ושונות מהותית מאדם לאדם.\n\nלצד זה, בעולם האמיתי: דמוקרטיות רבות ברחבי העולם נמצאות תחת לחץ הולך וגובר, והקיטוב בין אנשים שחושבים אחרת רק מעמיק. באופן פרדוקסלי, מאז שהומצא האינטרנט - כלי שהעניק לכל אדם גישה כמעט בלתי מוגבלת לשיח, מידע ותקשורת - השנאה בין הצדדים רק גברה, לא פחתה. אם עוד שיח, עוד מידע ועוד \"הזדמנות להבין את הצד השני\" היו פותרים את הבעיה, זה כבר היה קורה. משהו במבנה הבסיסי דורש שינוי כיוון של ממש."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "en": "Communities that organize around cooperation on the basic needs of life, instead of trying to persuade one another.",
+        "he": "קהילות שמתארגנות סביב שיתוף פעולה בצרכים הבסיסיים של החיים, במקום לנסות לשכנע זו את זו."
+      }
+    },
+    "domains": ["communities", "collaboration", "civic_innovation", "new_economy"],
+    "status": {
+      "lifecycle_stage": "exploration",
+      "activity_status": "forming"
+    },
+    "people": {
+      "founders": [{ "person_id": "ouri-poupko", "name": "Ouri Poupko" }],
+      "stewards": [
+        {
+          "name": "Ouri Poupko",
+          "role": { "translations": { "en": "Founder", "he": "מייסד" } }
+        }
+      ]
+    },
+    "current_needs": [
+      {
+        "id": "need-community-experiment",
+        "type": "community",
+        "description": {
+          "translations": {
+            "en": "A community interested in experimenting with the model.",
+            "he": "קהילה המעוניינת לבחון את המודל בניסוי מעשי."
+          }
+        },
+        "status": "open"
+      }
+    ],
+    "offers": [
+      {
+        "id": "offer-economic-model",
+        "type": "knowledge",
+        "description": {
+          "translations": {
+            "en": "Concepts and methods for collaborative value creation.",
+            "he": "רעיונות ומתודות ליצירת ערך משותפת."
+          }
+        }
+      }
+    ],
+    "collaboration_preferences": {
+      "types": ["experiment", "research", "technology", "community"]
+    },
+    "relationships": [
+      {
+        "target_id": "hamama",
+        "relationship_type": "exploration_context",
+        "verification_status": "needs_verification"
+      }
+    ],
+    "links": {
+      "website": null,
+      "linkedin": null,
+      "github": "https://github.com/ouripoupko/Communities2"
+    },
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-19",
+      "is_demo": false,
+      "hamama_badge": null,
+      "data_quality": {
+        "verified_by_project": false,
+        "overall_confidence": "medium"
+      }
+    }
+  }
+}

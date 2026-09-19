@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "repair-commons",
+    "slug": "repair-commons",
+
+    "name": {
+      "default": "בית מלאכה משותף",
+      "translations": { "he": "בית מלאכה משותף", "en": "The Shared Workshop" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "לתקן במקום לזרוק, ולהשאיל במקום לקנות.",
+        "en": "Repair instead of discard, borrow instead of buy."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "סדנה שכונתית שבה מתקנים מכשירים ביחד, וספריית כלים שבה אפשר להשאיל מקדחה במקום לקנות אחת. כל ערב יש מישהו שיודע ומישהו שרוצה ללמוד.",
+        "en": "A neighborhood workshop where people repair appliances together, and a tool library where you can borrow a drill instead of buying one. Every evening there's someone who knows and someone who wants to learn."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "שכונה שבה דברים לא נזרקים כשהם מתקלקלים, וכל משק בית לא צריך להחזיק כל כלי בעצמו.",
+          "en": "A neighborhood where things aren't thrown away when they break, and no household needs to own every tool."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "אנחנו קונים ומשליכים יותר ממה שצריך, וכישורי התיקון שהיו נפוצים הולכים לאיבוד. גם חדרי מחסן מלאים בכלים שנעשה בהם שימוש פעמיים בחיים.",
+          "en": "We buy and discard more than we need, and repair skills that used to be common are fading. Storage rooms are full of tools used twice in a lifetime."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שבכל שכונה תהיה נקודה אחת שבה מתקנים, משאילים ולומדים — ושאנשים ירגישו שזה טבעי.",
+        "en": "For every neighborhood to have one place where people repair, borrow and learn — and for that to feel natural."
+      }
+    },
+
+    "domains": ["sustainability", "communities", "local_resilience"],
+
+    "status": { "lifecycle_stage": "operating", "activity_status": "active" },
+
+    "geography": {
+      "scope": "local",
+      "place": { "translations": { "he": "באר שבע", "en": "Be'er Sheva" } }
+    },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "רוני אלקיים",
+          "role": { "translations": { "he": "מנהלת הסדנה", "en": "Workshop manager" } }
+        },
+        {
+          "name": "בועז דהאן",
+          "role": { "translations": { "he": "רכז מתקנים מתנדבים", "en": "Volunteer repairers coordinator" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "technology",
+        "title": {
+          "translations": {
+            "he": "מערכת השאלה ומלאי פשוטה לספריית הכלים",
+            "en": "A simple lending and inventory system for the tool library"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "היום הכול רשום במחברת. מחפשים כלי קל שמראה מי לקח מה, מתי יחזיר, ומה זמין — בלי לדרוש מהשכנים ללמוד תוכנה חדשה.",
+            "en": "Today everything is written in a notebook. We're looking for an easy tool that shows who took what, when it's due back, and what's available — without asking neighbors to learn new software."
+          }
+        },
+        "keywords": ["lending", "inventory", "tool", "sharing", "coordination", "exchange", "neighbors"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "skills",
+        "title": {
+          "translations": {
+            "he": "מתנדבים שמתקנים חשמל ואלקטרוניקה ערב אחד בשבוע",
+            "en": "Volunteers who repair electrical and electronic devices one evening a week"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "יש לנו מספיק אנשים שרוצים ללמוד ומעט מדי שיודעים ללמד. חשמלאים, טכנאים או סתם אנשים עם ידיים טובות — אתם מוזמנים.",
+            "en": "We have plenty of people who want to learn and too few who know how to teach. Electricians, technicians or just people with good hands — you're welcome."
+          }
+        },
+        "keywords": ["repair", "volunteers", "electronics", "hands", "teens", "youth"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "space",
+        "title": {
+          "translations": {
+            "he": "סדנה של 120 מ״ר עם ציוד בסיסי, פנויה בערבים",
+            "en": "A 120 sqm workshop with basic equipment, free in the evenings"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "חלל עם שולחנות עבודה, כלים וחשמל, נגיש ברגל מהמרכז. אפשר לקיים בו קבוצה קבועה או מפגש חד־פעמי.",
+            "en": "A space with workbenches, tools and power, reachable on foot from the center. Suitable for a regular group or a one-off session."
+          }
+        },
+        "keywords": ["space", "workshop", "evenings", "tools", "room", "teens", "youth"]
+      },
+      {
+        "id": "offer-2",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "קורס תיקון בסיסי בשלושה מפגשים לכל מי שרוצה",
+            "en": "A three-session basic repair course for anyone"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "איך מאבחנים תקלה, מה בטוח לפתוח, ומתי עוצרים ופונים לאיש מקצוע. נוסה עם נוער וגם עם גימלאים.",
+            "en": "How to diagnose a fault, what's safe to open, and when to stop and call a professional. Tried with teens and with retirees."
+          }
+        },
+        "keywords": ["repair", "training", "learning", "hands", "skills", "teens", "youth", "curriculum"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["resource_sharing", "community", "mentoring", "knowledge_exchange"] },
+
+    "links": { "website": "https://example.org/demo/shared-workshop", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-08-21",
+      "is_demo": true
+    }
+  }
+}

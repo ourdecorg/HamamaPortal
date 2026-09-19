@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "commons-ledger",
+    "slug": "commons-ledger",
+
+    "name": {
+      "default": "פנקס המשותף",
+      "translations": { "he": "פנקס המשותף", "en": "The Commons Ledger" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "בנק זמן קטן, פתוח וכזה שאפשר להסביר לסבתא.",
+        "en": "A small, open time bank you could explain to your grandmother."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "כלי קוד־פתוח שמאפשר לקבוצות קטנות לרשום החלפות של זמן ושירותים: שעה של תיקון מחשב תמורת שעה של שמרטפות. בלי כסף, בלי בנק, עם כללים שהקבוצה קובעת בעצמה.",
+        "en": "An open-source tool that lets small groups record exchanges of time and services: an hour of computer repair for an hour of babysitting. No money, no bank, with rules the group sets itself."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "עולם שבו חלק גדול ממה שאנשים נותנים זה לזה מקבל הכרה — גם כשאין עליו מחיר.",
+          "en": "A world where much of what people give each other is recognized — even when it has no price."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "עזרה הדדית קורית כל הזמן, אבל היא בלתי נראית, לא מאוזנת ומתפוגגת. מי שנותן הרבה מתעייף, ומי שרק מקבל מתבייש.",
+          "en": "Mutual help happens all the time, but it is invisible, unbalanced and fades away. Those who give a lot get tired; those who only receive feel embarrassed."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שקבוצות מקומיות יוכלו להפעיל בנק זמן משלהן תוך שעה, ולשנות את הכללים כשהן לומדות.",
+        "en": "For local groups to be able to run a time bank of their own within an hour, and change the rules as they learn."
+      }
+    },
+
+    "domains": ["new_economy", "technology", "communities"],
+
+    "status": { "lifecycle_stage": "prototype", "activity_status": "active" },
+
+    "geography": { "scope": "remote" },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "דניאל שפירא",
+          "role": { "translations": { "he": "מפתח ראשי", "en": "Lead developer" } }
+        },
+        {
+          "name": "ריהאם חדאד",
+          "role": { "translations": { "he": "עיצוב וליווי קבוצות", "en": "Design & group support" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "קבוצה של 30–50 אנשים לפיילוט של בנק זמן",
+            "en": "A group of 30–50 people to pilot a time bank"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "יש לנו גרסה ראשונה שעובדת. חסרה קבוצה אמיתית — שכנים, חברי קהילה או עמיתים — שתרצה לנסות אותה חודשיים ולספר לנו איפה היא נתקעת.",
+            "en": "We have a first working version. What's missing is a real group — neighbors, community members or colleagues — willing to try it for two months and tell us where it gets stuck."
+          }
+        },
+        "keywords": ["community", "pilot", "neighbors", "group", "timebank", "exchange"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "design",
+        "title": {
+          "translations": {
+            "he": "עיצוב ממשק בעברית ובערבית, גם למי שלא רגיל לאפליקציות",
+            "en": "Interface design in Hebrew and Arabic, for people who aren't used to apps"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "הכלי צריך להרגיש פשוט כמו פנקס נייר. מחפשים מעצבת או מעצב שיעזרו לנו לחשוב על נגישות, RTL ושפה שלא מרתיעה.",
+            "en": "The tool should feel as simple as a paper notebook. We're looking for a designer to help us think about accessibility, RTL and language that doesn't intimidate."
+          }
+        },
+        "keywords": ["design", "hebrew", "arabic", "interface", "accessibility"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "technology",
+        "title": {
+          "translations": {
+            "he": "מערכת קוד־פתוח קלה לרישום החלפות שירות וזמן",
+            "en": "A lightweight open-source system for recording service and time exchanges"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "קוד קטן ומתועד, שאפשר להפעיל בשעה: מי הציע מה, מי ביקש, ומה היתרה בין אנשים. אפשר להתאים אותו לקבוצה — כולל תיאום בקשות והצעות בין חברים.",
+            "en": "Small, documented code you can run in an hour: who offered what, who asked, and the balance between people. It can be adapted to a group — including coordinating requests and offers between members."
+          }
+        },
+        "keywords": ["tool", "exchange", "sharing", "coordination", "skills", "timebank", "open source", "lending"]
+      },
+      {
+        "id": "offer-2",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "ניסיון בעיצוב כללי החלפה הוגנים בין אנשים",
+            "en": "Experience designing fair exchange rules between people"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "למדנו מה קורה כשמישהו צובר יותר מדי, איך מתמודדים עם חובות, ואיך מגדירים ערך לשעות שונות. אפשר לשבת ולחשוב יחד על הכללים של הקבוצה שלכם.",
+            "en": "We've learned what happens when someone accumulates too much, how to handle debts, and how to value different hours. We can sit down and think together about your group's rules."
+          }
+        },
+        "keywords": ["fairness", "exchange", "rules", "economy", "timebank"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["pilot", "experiment", "co_creation", "knowledge_exchange"] },
+
+    "links": { "website": null, "linkedin": null, "github": "https://example.org/demo/commons-ledger-code" },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-08",
+      "is_demo": true
+    }
+  }
+}

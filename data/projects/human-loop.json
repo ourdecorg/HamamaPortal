@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "human-loop",
+    "slug": "human-loop",
+
+    "name": {
+      "default": "לולאה אנושית",
+      "translations": { "he": "לולאה אנושית", "en": "Human Loop" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "לעבוד עם AI בלי לוותר על השיקול של מי שעובד איתו.",
+        "en": "Working with AI without giving up the judgment of the person working with it."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "סדנאות קצרות לצוותים שמתחילים להשתמש ב-AI בעבודה: איפה כדאי לתת לו לעבוד לבד, איפה חייב אדם להחליט, ואיך מזהים את ההבדל. בנוסף, קבוצת מתנדבים מתחום ה-AI שעוזרת למיזמים חברתיים.",
+        "en": "Short workshops for teams starting to use AI at work: where it can work alone, where a person must decide, and how to tell the difference. Plus a group of AI volunteers who help social initiatives."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "מקומות עבודה שבהם בינה מלאכותית מחזקת את מה שאנשים טובים בו, ולא מחליפה את הקשב והאחריות שלהם.",
+          "en": "Workplaces where AI strengthens what people are good at, rather than replacing their attention and responsibility."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "צוותים מאמצים כלי AI מהר, בלי שיחה על מי אחראי לתוצאה. התוצאה: טעויות שאף אחד לא תופס, ועובדים שמרגישים שהם מפקחים על מכונה במקום לחשוב.",
+          "en": "Teams adopt AI tools fast, without a conversation about who is responsible for the result. The outcome: mistakes nobody catches, and employees who feel they're supervising a machine instead of thinking."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שכל צוות שמשתמש ב-AI ידע להגיד מראש איפה נמצא האדם בלולאה — ולמה.",
+        "en": "For every team using AI to be able to say in advance where the human sits in the loop — and why."
+      }
+    },
+
+    "domains": ["ai_humans", "future_of_work", "technology"],
+
+    "status": { "lifecycle_stage": "exploration", "activity_status": "forming" },
+
+    "geography": { "scope": "national" },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "תמר גולדשטיין",
+          "role": { "translations": { "he": "מנחת סדנאות", "en": "Workshop facilitator" } }
+        },
+        {
+          "name": "עומר לביא",
+          "role": { "translations": { "he": "רכז מתנדבי AI", "en": "AI volunteers coordinator" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "שלושה־ארבעה צוותים בארגונים שיסכימו לנסות סדנה",
+            "en": "Three or four teams in organizations willing to try a workshop"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "מחפשים צוותים אמיתיים — בבית ספר, בעירייה, בעסק קטן — שכבר משתמשים ב-AI או עומדים להתחיל, ומוכנים לחצי יום של שיחה כנה על איך זה הולך.",
+            "en": "We're looking for real teams — in a school, a municipality, a small business — that already use AI or are about to, and are open to half a day of honest conversation about how it's going."
+          }
+        },
+        "keywords": ["teams", "workshop", "organization", "ai", "pilot", "workplace"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "research",
+        "title": {
+          "translations": {
+            "he": "חוקרת או חוקר שילוו ויבדקו מה משתנה בצוותים אחרי הסדנה",
+            "en": "A researcher to follow and study what changes in teams after the workshop"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "אנחנו מאמינים שהסדנה משנה משהו, אבל רוצים לדעת מה בדיוק ולא רק להרגיש. מחפשים ליווי מחקרי צנוע, אפילו קטן.",
+            "en": "We believe the workshop changes something, but want to know exactly what rather than just feel it. We're looking for modest research support, even a small one."
+          }
+        },
+        "keywords": ["research", "evaluation", "teams", "ai", "impact"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "skills",
+        "title": {
+          "translations": {
+            "he": "שישה מפתחי ומפתחות AI שמתנדבים כמה שעות בחודש למיזמים חברתיים",
+            "en": "Six AI engineers volunteering a few hours a month for social initiatives"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "קבוצה קטנה של אנשי מקצוע שרוצים להשתמש במה שהם יודעים לטובת משהו משמעותי: סיכום ועיבוד טקסטים, מיון מסמכים, אבות־טיפוס מהירים — תמיד עם בדיקה אנושית.",
+            "en": "A small group of professionals who want to use what they know for something meaningful: text summarization and processing, document sorting, quick prototypes — always with human review."
+          }
+        },
+        "keywords": ["ai", "volunteers", "engineers", "summarization", "text", "documents", "verification", "developers", "tool"]
+      },
+      {
+        "id": "offer-2",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "פורמט סדנה של חצי יום: איך עובדים עם AI ומשאירים אדם בלולאה",
+            "en": "A half-day workshop format on working with AI while keeping a human in the loop"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "מערך מוכן עם תרגילים ותרחישים אמיתיים, אפשר להשתמש בו כמו שהוא או להתאים לארגון שלכם.",
+            "en": "A ready-made outline with exercises and real scenarios, usable as is or adapted to your organization."
+          }
+        },
+        "keywords": ["ai", "workshop", "teams", "human in the loop", "decisions", "learning"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["experiment", "research", "knowledge_exchange", "mentoring"] },
+
+    "links": { "website": "https://example.org/demo/human-loop", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-15",
+      "is_demo": true
+    }
+  }
+}

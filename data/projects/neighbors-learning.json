@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "neighbors-learning",
+    "slug": "neighbors-learning",
+
+    "name": {
+      "default": "שכנים לומדים",
+      "translations": { "he": "שכנים לומדים", "en": "Neighbors Learning" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "כל שכונה מלאה במורים. רק צריך לגלות מי הם.",
+        "en": "Every neighborhood is full of teachers. We just help them find each other."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "מעגלי למידה קטנים בין שכנים: מישהו מלמד לבשל, מישהי מסבירה איך קוראים חוזה שכירות, נער מראה איך מתקינים אפליקציה. אין כיתות ואין תעודות — יש שכנים שמכירים זה את זה קצת יותר.",
+        "en": "Small learning circles between neighbors: someone teaches cooking, someone explains how to read a rental contract, a teenager shows how to install an app. No classrooms, no certificates — just neighbors who end up knowing each other a little better."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "שכונה שבה אפשר לדפוק על דלת ולדעת שמישהו יודע לעזור — ושבה כל אחד מרגיש שיש לו משהו ללמד.",
+          "en": "A neighborhood where you can knock on a door and know someone can help — and where everyone feels they have something to teach."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "אנשים גרים זה ליד זה שנים בלי לדעת מה השכנים שלהם יודעים. הידע והכישורים שקיימים ברחוב אחד נשארים בלתי נראים.",
+          "en": "People live next to each other for years without knowing what their neighbors know. The skills that exist on a single street stay invisible."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שבכל שכונה יפעלו כמה מעגלי למידה קבועים, שמנוהלים בידי התושבים עצמם.",
+        "en": "For every neighborhood to have a few regular learning circles, run by the residents themselves."
+      }
+    },
+
+    "domains": ["communities", "education", "local_resilience"],
+
+    "status": { "lifecycle_stage": "pilot", "activity_status": "active" },
+
+    "geography": {
+      "scope": "local",
+      "place": { "translations": { "he": "חיפה", "en": "Haifa" } }
+    },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "מיכל אברהמי",
+          "role": { "translations": { "he": "מייסדת ורכזת מעגלים", "en": "Founder & circle coordinator" } }
+        },
+        {
+          "name": "יונתן רוזן",
+          "role": { "translations": { "he": "קשר עם קבוצות השכנים", "en": "Neighbor-group liaison" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "technology",
+        "title": {
+          "translations": {
+            "he": "כלי פשוט לתיאום החלפת מיומנויות בין שכנים",
+            "en": "A simple tool for coordinating skill swaps between neighbors"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "היום הכול מתנהל בקבוצות וואטסאפ ונבלע בהודעות. מחפשים כלי קליל, בעברית, שבו שכן מציע שעה של ידע ושכן אחר מבקש — בלי הרשמה מסובכת ובלי אפליקציה כבדה.",
+            "en": "Today everything happens in WhatsApp groups and gets buried. We're looking for a light Hebrew tool where one neighbor offers an hour of knowledge and another asks for it — no complicated sign-up, no heavy app."
+          }
+        },
+        "keywords": ["coordination", "tool", "exchange", "sharing", "skills", "neighbors"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "research",
+        "title": {
+          "translations": {
+            "he": "עזרה בבדיקה: האם שכנים שלומדים יחד מכירים זה את זה יותר?",
+            "en": "Help measuring whether neighbors who learn together know each other better"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "יש לנו תחושה ואנקדוטות, אבל אין נתונים. מחפשים מי שיעזור לבנות שאלון קצר ולנתח אותו בצורה מכבדת.",
+            "en": "We have a feeling and anecdotes, but no data. We're looking for someone to help build a short questionnaire and analyze it respectfully."
+          }
+        },
+        "keywords": ["research", "survey", "impact", "neighbors"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "גישה לשלוש קבוצות שכנים בחיפה (כ-400 משקי בית)",
+            "en": "Access to three neighbor groups in Haifa (about 400 households)"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "שלוש קבוצות שכנים פעילות בחיפה שמוכנות לנסות רעיונות חדשים, כל עוד זה נעשה בכבוד ובקצב שלהן.",
+            "en": "Three active neighbor groups in Haifa, open to trying new ideas — as long as it's done respectfully and at their own pace."
+          }
+        },
+        "keywords": ["community", "pilot", "neighbors", "households", "local", "group"]
+      },
+      {
+        "id": "offer-2",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "מדריך להקמת מעגל למידה שכונתי",
+            "en": "A playbook for starting a neighborhood learning circle"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "מדריך בן עשרה עמודים משנתיים של ניסוי וטעייה: איך מתחילים, מה עושים כשאף אחד לא מגיע, ואיך שומרים על הקבוצה חיה.",
+            "en": "A ten-page guide from two years of trial and error: how to start, what to do when nobody shows up, and how to keep a group alive."
+          }
+        },
+        "keywords": ["learning", "playbook", "facilitation", "neighbors", "circles"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["pilot", "community", "knowledge_exchange", "research"] },
+
+    "links": { "website": "https://example.org/demo/neighbors-learning", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-12",
+      "is_demo": true
+    }
+  }
+}

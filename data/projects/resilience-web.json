@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "resilience-web",
+    "slug": "resilience-web",
+
+    "name": {
+      "default": "רשת חוסן שכונתית",
+      "translations": { "he": "רשת חוסן שכונתית", "en": "Neighborhood Resilience Web" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "לדעת מי גר לידך — לפני שיש צורך בו.",
+        "en": "Knowing who lives next door — before you need them."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "תוכנית מוכנות לשכונות: מי יש לו גנרטור, מי מכיר עזרה ראשונה, מי גר לבד ואולי צריך שיבדקו מה שלומו. רכזי שכונה מתנדבים בונים את הרשת לפני משבר ולא בזמנו.",
+        "en": "A preparedness program for neighborhoods: who has a generator, who knows first aid, who lives alone and might need a check-in. Volunteer neighborhood coordinators build the web before a crisis rather than during one."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "שכונות שבהן בשעת משבר אף אחד לא נשאר לבד, כי יש שכנים שמכירים ויודעים מי יכול לעזור במה.",
+          "en": "Neighborhoods where nobody is left alone in a crisis, because neighbors know each other and who can help with what."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "בשעת חירום, מערכות רשמיות מגיעות באיחור והעזרה הכי קרובה היא שכן. אבל אנשים לא מכירים, ואין מידע מסודר על מה קיים ברחוב.",
+          "en": "In an emergency, official systems arrive late and the nearest help is a neighbor. But people don't know each other, and there's no organized information about what exists on the street."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שבכל שכונה יהיו רכזים מתנדבים ומפה עדכנית של מה שקיים בה: אנשים, כישורים וציוד.",
+        "en": "For every neighborhood to have volunteer coordinators and an up-to-date map of what exists in it: people, skills and equipment."
+      }
+    },
+
+    "domains": ["local_resilience", "communities", "civic_innovation"],
+
+    "status": { "lifecycle_stage": "scaling", "activity_status": "active" },
+
+    "geography": { "scope": "national" },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "הדס קפלן",
+          "role": { "translations": { "he": "מנהלת התוכנית", "en": "Program director" } }
+        },
+        {
+          "name": "אמיר נסר",
+          "role": { "translations": { "he": "רכז הכשרות", "en": "Training coordinator" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "technology",
+        "title": {
+          "translations": {
+            "he": "מפת משאבים שכונתית שעובדת גם כשאין אינטרנט",
+            "en": "A neighborhood resource map that works even without internet"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "רשימה מעודכנת של מי יש לו מה — ציוד, כישורים, מקום ללון — שנשארת נגישה גם כשהרשת קורסת. היום זה גיליון אקסל אצל הרכז.",
+            "en": "An up-to-date list of who has what — equipment, skills, a place to stay — that stays accessible even when the network is down. Today it's a spreadsheet on the coordinator's laptop."
+          }
+        },
+        "keywords": ["map", "offline", "resources", "coordination", "inventory", "neighbors", "skills", "sharing", "tool"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "funding",
+        "title": {
+          "translations": {
+            "he": "מימון לשנת פעילות של עשרה רכזי שכונה",
+            "en": "Funding for a year of activity for ten neighborhood coordinators"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "רכזים מתנדבים שוחקים בלי תמיכה בסיסית. מחפשים מימון צנוע לשעות עבודה ולהכשרות.",
+            "en": "Volunteer coordinators burn out without basic support. We're looking for modest funding for working hours and training."
+          }
+        },
+        "keywords": ["funding", "coordinators", "neighborhoods"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "הדרכת מוכנות לשכונה — תוכנית שנוסתה ב-30 שכונות",
+            "en": "A neighborhood preparedness training — tested in 30 neighborhoods"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "הדרכה של שלושה ערבים שמלמדת שכנים למפות את עצמם, לתרגל תרחישים ולהחליט מראש מי עושה מה.",
+            "en": "A three-evening training that teaches neighbors to map themselves, rehearse scenarios and decide in advance who does what."
+          }
+        },
+        "keywords": ["preparedness", "training", "neighbors", "emergency", "volunteers", "learning", "circles", "playbook"]
+      },
+      {
+        "id": "offer-2",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "רשת של 60 רכזי שכונה מתנדבים ברחבי הארץ",
+            "en": "A network of 60 volunteer neighborhood coordinators across the country"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "אנשים שכבר מחזיקים קבוצות שכנים ומכירים את הרחוב שלהם. פתוחים לנסות כלים חדשים כל עוד הם פשוטים ומוכחים.",
+            "en": "People who already hold neighbor groups and know their street. Open to trying new tools as long as they are simple and proven."
+          }
+        },
+        "keywords": ["coordinators", "volunteers", "neighborhoods", "network", "community", "neighbors", "pilot", "local", "group"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["pilot", "community", "knowledge_exchange", "resource_sharing"] },
+
+    "links": { "website": "https://example.org/demo/resilience-web", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-01",
+      "is_demo": true
+    }
+  }
+}

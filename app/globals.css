@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/*
+  Hamama visual identity
+  ──────────────────────
+  A greenhouse at dusk: warm paper, deep leaf-green ink, and three signal colors
+  that carry the product's grammar everywhere they appear:
+
+    amber  → a NEED   (reaching out, something missing)
+    teal   → an OFFER (something to give)
+    lilac  → a CONNECTION (where the two meet)
+*/
+
+@theme {
+  --color-paper: #faf8f3;
+  --color-paper-2: #f3efe5;
+  --color-paper-3: #ebe6d9;
+
+  --color-ink: #16261f;
+  --color-ink-2: #43554c;
+  --color-ink-3: #74837b;
+  --color-line: #e3ddcf;
+  --color-line-2: #d3ccba;
+
+  --color-leaf-50: #eef5ef;
+  --color-leaf-100: #dcebdf;
+  --color-leaf-200: #bcd8c3;
+  --color-leaf-300: #92bd9f;
+  --color-leaf-500: #3f8f63;
+  --color-leaf-600: #2d7550;
+  --color-leaf-700: #1f5d46;
+  --color-leaf-800: #174734;
+  --color-leaf-900: #10322a;
+
+  --color-need-50: #fdf3e8;
+  --color-need-100: #fbe4cd;
+  --color-need-200: #f6cba1;
+  --color-need-400: #ec9a52;
+  --color-need-500: #de7a2e;
+  --color-need-700: #9a4a0c;
+
+  --color-offer-50: #e9f6f2;
+  --color-offer-100: #d0ece4;
+  --color-offer-200: #a6dccf;
+  --color-offer-400: #4fb8a1;
+  --color-offer-500: #2ba08a;
+  --color-offer-700: #0e6656;
+
+  --color-link-50: #f1effc;
+  --color-link-100: #e2defa;
+  --color-link-200: #c9c2f3;
+  --color-link-400: #9285e3;
+  --color-link-500: #7566d9;
+  --color-link-700: #4636ab;
+
+  --color-sun: #f4c56a;
+
+  --font-sans: var(--font-heebo), "Segoe UI", system-ui, sans-serif;
+  --font-display: var(--font-frank), "David Libre", Georgia, serif;
+
+  --shadow-soft: 0 1px 2px rgb(22 38 31 / 0.04), 0 8px 24px -12px rgb(22 38 31 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(22 38 31 / 0.05), 0 18px 40px -16px rgb(22 38 31 / 0.22);
+
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-breathe: breathe 3.2s ease-in-out infinite;
+  --animate-flow: flow 2.4s linear infinite;
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.35); }
+  }
+  @keyframes flow {
+    to { stroke-dashoffset: -20; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+/* A quiet ambient wash behind everything — mint, lilac and peach. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 36rem at 92% -6%, rgb(188 216 195 / 0.42), transparent 60%),
+    radial-gradient(50rem 30rem at -8% 8%, rgb(226 222 250 / 0.5), transparent 60%),
+    radial-gradient(46rem 30rem at 60% 108%, rgb(251 228 205 / 0.45), transparent 60%);
+}
+
+::selection {
+  background: var(--color-leaf-200);
+  color: var(--color-leaf-900);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-leaf-500);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Layout helper: consistent page gutters. */
+.page-wrap {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) {
+  .page-wrap { padding-inline: 2rem; }
+}
+
+/* Jump-to targets (e.g. /connections#some-id) glow briefly. */
+.connection-anchor:target {
+  animation: target-glow 2.4s ease-out 1;
+}
+@keyframes target-glow {
+  0% { box-shadow: 0 0 0 0 rgb(117 102 217 / 0.45); }
+  30% { box-shadow: 0 0 0 10px rgb(117 102 217 / 0.18); }
+  100% { box-shadow: 0 0 0 0 rgb(117 102 217 / 0); }
+}
+
+.scroll-mt-header {
+  scroll-margin-top: 6rem;
+}
+
+/* Skeleton shimmer for loading states. */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-paper-2) 0%, var(--color-paper-3) 50%, var(--color-paper-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

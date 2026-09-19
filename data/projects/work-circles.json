@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "_comment": "DEMO / EXAMPLE CONTENT — a fictional initiative written for the Hamama portal prototype. Any resemblance to real projects or people is coincidental.",
+  "project": {
+    "id": "work-circles",
+    "slug": "work-circles",
+
+    "name": {
+      "default": "מעגלי עבודה",
+      "translations": { "he": "מעגלי עבודה", "en": "Work Circles" }
+    },
+    "tagline": {
+      "translations": {
+        "he": "עצמאים שלא צריכים לעבוד לבד.",
+        "en": "Freelancers who don't have to work alone."
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "מעגלים קבועים של שמונה עד עשרה עצמאים ועצמאיות שנפגשים פעם בשבועיים: מתייעצים על תמחור ועל לקוחות קשים, מעבירים עבודה זה לזה, ומשאירים מקום גם לימים שקשה בהם.",
+        "en": "Regular circles of eight to ten freelancers meeting every two weeks: consulting on pricing and difficult clients, passing work to each other, and leaving room for the hard days too."
+      }
+    },
+
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "עולם שבו עבודה עצמאית פירושה חופש עם רשת ביטחון של אנשים — לא בדידות מול מסך.",
+          "en": "A world where freelance work means freedom with a safety net of people — not loneliness in front of a screen."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "עצמאים נושאים לבד את כל ההחלטות: תמחור, גבולות, שחיקה. ידע קיים בקהילה המקצועית, אבל אין מקום קבוע שבו הוא מתחלק.",
+          "en": "Freelancers carry every decision alone: pricing, boundaries, burnout. The knowledge exists in the professional community, but there's no regular place where it gets shared."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "שכל עצמאי ועצמאית יוכלו למצוא מעגל שמתאים להם, ושהמעגלים יתחילו לתמוך זה בזה.",
+        "en": "For every freelancer to be able to find a circle that fits them, and for the circles to start supporting each other."
+      }
+    },
+
+    "domains": ["future_of_work", "communities", "new_economy"],
+
+    "status": { "lifecycle_stage": "operating", "activity_status": "active" },
+
+    "geography": {
+      "scope": "national",
+      "place": { "translations": { "he": "תל אביב ומרחוק", "en": "Tel Aviv & remote" } }
+    },
+
+    "people": {
+      "stewards": [
+        {
+          "name": "שירה מנור",
+          "role": { "translations": { "he": "מייסדת", "en": "Founder" } }
+        }
+      ]
+    },
+
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "facilitation",
+        "title": {
+          "translations": {
+            "he": "מנחות ומנחים עם ניסיון שיובילו מעגלים חדשים",
+            "en": "Experienced facilitators to lead new circles"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "יש רשימת המתנה של עצמאים שרוצים להצטרף, אבל כל מעגל חדש צריך מנחה שיודע לשמור על מרחב בטוח ולא להפוך לנטוורקינג.",
+            "en": "There's a waiting list of freelancers who want to join, but every new circle needs a facilitator who can hold a safe space and keep it from turning into networking."
+          }
+        },
+        "keywords": ["facilitation", "circles", "groups", "freelancers", "mentoring", "learning"],
+        "status": "open"
+      },
+      {
+        "id": "need-2",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "ידע על כללי חלוקה הוגנת של עבודה וערך בין עצמאים",
+            "en": "Knowledge about fair ways to share work and value between freelancers"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כשעצמאים מעבירים עבודה זה לזה, נוצרות שאלות: מי מרוויח, מי חייב למי. מחפשים ניסיון של מי שכבר חשב על כללי החלפה הוגנים.",
+            "en": "When freelancers pass work between them, questions arise: who earns, who owes whom. We're looking for the experience of someone who has already thought about fair exchange rules."
+          }
+        },
+        "keywords": ["fairness", "exchange", "rules", "economy", "sharing"],
+        "status": "open"
+      }
+    ],
+
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "community",
+        "title": {
+          "translations": {
+            "he": "רשת של כ-200 עצמאים ועצמאיות בעיצוב, כתיבה ותוכנה",
+            "en": "A network of about 200 freelancers in design, writing and software"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "אנשים שכבר מכירים זה את זה ומעוניינים לנסות דברים חדשים יחד. נוח לפנות אליהם בקבוצה קטנה ולא במייל המוני.",
+            "en": "People who already know each other and are interested in trying new things together. Best approached as a small group, not by mass email."
+          }
+        },
+        "keywords": ["freelancers", "network", "designers", "writers", "developers", "community", "professionals"]
+      },
+      {
+        "id": "offer-2",
+        "type": "skills",
+        "title": {
+          "translations": {
+            "he": "שעות מקצועיות מתנדבות של מעצבים, כותבים ומפתחים למיזמים חברתיים",
+            "en": "Volunteered professional hours from designers, writers and developers for social initiatives"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כל חבר במעגל יכול לתרום שעתיים בחודש. עד היום עזרנו לשבע יוזמות עם עיצוב, ניסוח ואבות־טיפוס.",
+            "en": "Each circle member can give two hours a month. So far we've helped seven initiatives with design, writing and prototypes."
+          }
+        },
+        "keywords": ["pro-bono", "design", "writing", "professionals", "volunteers", "developers", "interface", "accessibility", "visualization", "prototype", "mentors", "tech"]
+      }
+    ],
+
+    "collaboration_preferences": { "types": ["community", "knowledge_exchange", "mentoring", "experiment"] },
+
+    "links": { "website": "https://example.org/demo/work-circles", "linkedin": null, "github": null },
+
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-03",
+      "is_demo": true
+    }
+  }
+}
