@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
-import { ArrowLeft, ArrowRight, Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Trash2 } from "lucide-react";
-import { saveProjectEdits } from "@/app/projects/actions";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { ArrowLeft, ArrowRight, Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Sprout, Trash2 } from "lucide-react";
+import { createProject, saveProjectEdits } from "@/app/projects/actions";
 import { ProjectCard } from "@/components/ProjectCard";
 import { TypeIcon } from "@/components/TypeIcon";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   type StepId,
 } from "@/lib/wizard";
 import { loginUrl } from "@/lib/next-path";
+import { forgetProjectDraft, rememberProjectDraft, takeProjectDraft } from "@/lib/project-draft";
 import { cn } from "@/lib/utils";
 import type { GeographyScope, Need } from "@/types/project";
 
@@ -202,14 +203,30 @@ function ItemEditor({
 // ----------------------------------------------------------------- wizard ----
 
 interface ProjectWizardProps {
-  /** "create": the original flow (JSON preview / download). "edit": a steward updating a stored project. */
+  /** "create": a new project. "edit": a steward updating a stored project. */
   mode?: "create" | "edit";
   initialDraft?: Draft;
   /** Edit mode: the project being edited. Its slug (and so its URL) cannot change. */
   slug?: string;
+  /**
+   * Create mode with a database: "publish" writes the project straight to Supabase.
+   * Without one (demo mode) the last step offers the JSON file instead.
+   */
+  persist?: boolean;
+  /** Create mode: whether the visitor is already signed in (only changes the wording; the server decides). */
+  signedIn?: boolean;
+  /** Create mode: the visitor is back from signing in — submit the draft that waited in this browser. */
+  resume?: boolean;
 }
 
-export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }: ProjectWizardProps) {
+export function ProjectWizard({
+  mode = "create",
+  initialDraft,
+  slug: editSlug,
+  persist = false,
+  signedIn = false,
+  resume = false,
+}: ProjectWizardProps) {
   const editing = mode === "edit" && Boolean(editSlug);
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initialDraft ?? emptyDraft);
@@ -220,6 +237,8 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
   const [copied, setCopied] = useState(false);
   const [devMessage, setDevMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [resuming, setResuming] = useState(resume);
+  const resumeStarted = useRef(false);
 
   const step: StepId = STEPS[stepIndex].id;
   const isLast = stepIndex === STEPS.length - 1;
@@ -250,6 +269,54 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
       }
     });
   }
+
+  /** Create the project in Supabase. A visitor is sent to sign in first; the draft waits in this browser. */
+  async function publishDraft(d: Draft, fromResume: boolean): Promise<"navigating" | "stay"> {
+    const res = await createProject(d);
+    if (res.status === "created") {
+      forgetProjectDraft();
+      router.push(`/projects/${res.slug}?created=1`);
+      return "navigating";
+    }
+    if (res.status === "auth_required") {
+      rememberProjectDraft(d);
+      if (!fromResume) {
+        router.push(loginUrl("/projects/new?resume=1"));
+        return "navigating";
+      }
+      setSaveState({ ok: false, text: "ההתחברות לא הושלמה, ולכן המיזם עוד לא נוצר. הטיוטה שמורה — אפשר לנסות שוב." });
+      return "stay";
+    }
+    setSaveState({ ok: false, text: res.error });
+    return "stay";
+  }
+
+  function publish() {
+    setSaveState(null);
+    startSaving(async () => {
+      await publishDraft(draft, false);
+    });
+  }
+
+  // Back from signing in: the draft that waited in this browser is submitted, once.
+  useEffect(() => {
+    if (!resume || resumeStarted.current) return; // React StrictMode runs effects twice in development
+    resumeStarted.current = true;
+
+    const waiting = takeProjectDraft();
+    if (!waiting) {
+      router.replace("/projects/new");
+      return;
+    }
+    startSaving(async () => {
+      setDraft(waiting);
+      setStepIndex(STEPS.length - 1);
+      // On success the page navigates away, so the "saving…" notice stays until then.
+      if ((await publishDraft(waiting, true)) === "stay") setResuming(false);
+    });
+    // publishDraft only uses the router and state setters, which do not change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resume, router]);
 
   function next() {
     const found = validateStep(step, draft);
@@ -307,6 +374,15 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
     } finally {
       setSaving(false);
     }
+  }
+
+  if (resuming) {
+    return (
+      <p role="status" className="flex items-center justify-center gap-3 rounded-2xl bg-leaf-50 px-5 py-4 font-medium text-leaf-900">
+        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+        יוצרים את המיזם שלכם…
+      </p>
+    );
   }
 
   return (
@@ -391,6 +467,7 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
                 <Hint>
                   {editing ? "הכתובת של המיזם נשארת כפי שהיא, כדי שקישורים קיימים ימשיכו לעבוד: " : "הכתובת תהיה "}
                   <span dir="ltr" className="font-mono text-ink-2">/projects/{slug}</span>
+                  {!editing && persist && " — ואם היא כבר תפוסה, נוסיף לה מספר."}
                 </Hint>
                 <FieldError message={errors.slug} />
               </div>
@@ -621,12 +698,16 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
           </section>
         )}
 
-        {/* 6 · REVIEW — edit mode: save to the portal */}
-        {step === "review" && editing && (
+        {/* 6 · REVIEW — saved to the portal: edit mode saves the changes, create mode publishes the project */}
+        {step === "review" && (editing || persist) && (
           <section>
             <StepIntro
-              title="מוכנים לשמור?"
-              body="השינויים יופיעו בדף המיזם מיד, והחיבורים יחושבו מחדש לפי הצרכים וההצעות המעודכנים."
+              title={editing ? "מוכנים לשמור?" : "מוכנים לפרסם?"}
+              body={
+                editing
+                  ? "השינויים יופיעו בדף המיזם מיד, והחיבורים יחושבו מחדש לפי הצרכים וההצעות המעודכנים."
+                  : "המיזם יופיע בפורטל מיד, והצרכים וההצעות שלכם ייכנסו לחיבורים. אתם תהיו המטפחים שלו, ותוכלו לערוך אותו בכל שלב."
+              }
             />
 
             {fileIssues.length > 0 && (
@@ -656,14 +737,19 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
             </dl>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Button size="lg" onClick={saveEdits} disabled={saving_ || fileIssues.length > 0}>
-                {saving_ ? <Loader2 className="animate-spin" /> : <Save />}
-                {saving_ ? "שומר…" : "שמירת שינויים"}
+              <Button size="lg" onClick={editing ? saveEdits : publish} disabled={saving_ || fileIssues.length > 0}>
+                {saving_ ? <Loader2 className="animate-spin" /> : editing ? <Save /> : <Sprout />}
+                {editing ? (saving_ ? "שומר…" : "שמירת שינויים") : saving_ ? "יוצר…" : "פרסום המיזם"}
               </Button>
-              <Link href={`/projects/${editSlug}`} className={buttonVariants({ variant: "ghost", size: "lg" })}>
-                ביטול
-              </Link>
+              {editing && (
+                <Link href={`/projects/${editSlug}`} className={buttonVariants({ variant: "ghost", size: "lg" })}>
+                  ביטול
+                </Link>
+              )}
             </div>
+            {!editing && !signedIn && (
+              <Hint>כדי לפרסם נבקש מכם להיכנס לחשבון. מה שמילאתם כאן ישמר ויחכה לכם, ובחזרה המיזם ייווצר אוטומטית.</Hint>
+            )}
             {saveState && (
               <p role={saveState.ok ? "status" : "alert"} className={cn("mt-4 text-sm font-medium", saveState.ok ? "text-leaf-700" : "text-need-700")}>
                 {saveState.text}
@@ -672,12 +758,12 @@ export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }:
           </section>
         )}
 
-        {/* 6 · REVIEW — create mode: a JSON file for the seed data */}
-        {step === "review" && !editing && (
+        {/* 6 · REVIEW — demo mode only (no database): a JSON file for the seed data */}
+        {step === "review" && !editing && !persist && (
           <section>
             <StepIntro
               title="הנה המיזם שלכם"
-              body="הכלי הזה מכין קובץ JSON. הורידו אותו והניחו בתיקייה — מנהל/ת המערכת מייבא/ת אותו לפורטל."
+              body="הפורטל רץ כרגע במצב הדגמה, בלי מסד נתונים, ולכן אי אפשר לפרסם. הכלי מכין קובץ JSON — הורידו אותו והניחו בתיקייה, ומנהל/ת המערכת מייבא/ת אותו."
             />
 
             {fileIssues.length > 0 && (

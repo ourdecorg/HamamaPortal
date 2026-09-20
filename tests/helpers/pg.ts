@@ -24,6 +24,20 @@ export const SUPABASE_STUBS = `
   alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 `;
 
+/**
+ * Run `fn` with the Postgres role and JWT subject Supabase would use for this caller:
+ * `authenticated` + auth.uid() = user, or the `anon` role for a signed-out visitor (user = null).
+ */
+export async function asUser<T>(db: PGlite, user: string | null, fn: () => Promise<T>): Promise<T> {
+  await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [user ?? ""]);
+  await db.exec(`set role ${user ? "authenticated" : "anon"}`);
+  try {
+    return await fn();
+  } finally {
+    await db.exec("reset role");
+  }
+}
+
 /** A fresh in-process Postgres with the Supabase stubs and every migration applied, in order. */
 export async function createMigratedDb(): Promise<PGlite> {
   const db = new PGlite();

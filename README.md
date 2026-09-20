@@ -25,18 +25,18 @@ app/
   page.tsx                 home: hero, pulse, seeking collaboration, connections, domains, wish well
   projects/page.tsx        explore: local search + domain / stage / need-offer filters
   projects/[slug]/page.tsx a project as a story
-  projects/new/page.tsx    5-step wizard → JSON preview / download
+  projects/new/page.tsx    the wizard: publishes straight to Supabase (JSON preview only in demo mode)
   discover/page.tsx        conversational discovery (one sentence → matches + reasons)
   connections/page.tsx     every possible connection + needs nobody answers yet
   wishes/                  באר המשאלות (analyse for everyone; "save this wish" needs sign-in)
   login/, auth/            Supabase Auth: Google + magic link, server actions, /auth/callback
   my-space/                המרחב שלי: my wishes, my projects, my connections
   projects/[slug]/edit/    steward-only: the wizard, pre-filled
-  api/projects/route.ts    DEV-ONLY: write a wizard file into /data/projects
+  api/projects/route.ts    DEV-ONLY, demo mode: write a wizard JSON file into /data/projects
 components/                ProjectCard, NeedBadge, OfferBadge, ConnectionCard, DomainTag,
                            EcosystemPulse, EcosystemMap, SearchBox, …
 proxy.ts                   keeps the Supabase session fresh (not an authorization layer)
-supabase/migrations/       schema + Row Level Security (the reproducible source of the database)
+supabase/migrations/       schema, Row Level Security, create_project() (the reproducible source of the database)
 data/projects/*.json       SEED / demo data: imported by `npm run db:seed`, read at runtime only in demo mode
 scripts/                   seed.ts, approve-steward.ts (service-role CLI), check-data.ts
 tests/                     RLS, seed and mapping tests
@@ -54,7 +54,7 @@ types/project.ts           types derived from the Zod schema
 
 ### Data layer
 
-Pages call `getProjects()`, `getProjectBySlug()`, `searchProjects()`, `getDomains()`, `getSuggestedConnections()`, `getConnections()`, `getEcosystemStats()` … from `lib/projects.ts` and never see the backend. At runtime that is **Supabase** (`projects`, `needs`, `offers`); the connection engine and discovery still run over the same `Project` objects as before, so a steward's edit changes the matching immediately. Persistent objects — `wishes`, `project_stewards`, `opportunities` — are written by server actions with the user's own session, and Row Level Security decides what is allowed.
+Pages call `getProjects()`, `getProjectBySlug()`, `searchProjects()`, `getDomains()`, `getSuggestedConnections()`, `getConnections()`, `getEcosystemStats()` … from `lib/projects.ts` and never see the backend. At runtime that is **Supabase** (`projects`, `needs`, `offers`); the connection engine and discovery still run over the same `Project` objects as before, so a steward's edit changes the matching immediately. Persistent objects — `projects` (created by the wizard through `create_project()`), `wishes`, `project_stewards`, `opportunities` — are written by server actions with the user's own session, and Row Level Security decides what is allowed.
 
 A malformed record (failed validation) is **skipped and reported**, never fatal.
 

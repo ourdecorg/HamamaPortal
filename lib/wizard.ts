@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { t } from "@/lib/locale";
+import { projectToCreateArgs, type CreateProjectArgs } from "@/lib/project-mapper";
 import {
   activityStatusSchema,
   geographyScopeSchema,
   lifecycleStageSchema,
   needStatusSchema,
   projectFileSchema,
+  projectSchema,
 } from "@/lib/schema";
 import type { GeographyScope, LifecycleStage, LocalizedText, Need, Offer, Project, ProjectFile, Steward } from "@/types/project";
 
@@ -93,6 +95,8 @@ export function slugify(name: string): string {
 }
 
 export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+/** /projects/new is the add-project route. */
+const RESERVED_SLUG = "new";
 
 const he = (text: string): LocalizedText => ({ translations: { he: text.trim() } });
 
@@ -356,7 +360,9 @@ export function validateStep(step: StepId, d: Draft): Record<string, string> {
     if (!d.name.trim()) errors.name = "איך קוראים למיזם?";
     if (!d.tagline.trim()) errors.tagline = "משפט אחד שמסביר מה אתם עושים.";
     if (!d.short_description.trim()) errors.short_description = "כמה משפטים שיעזרו למישהו להבין במה מדובר.";
-    if (!SLUG_PATTERN.test(d.slug || slugify(d.name))) errors.slug = "רק אותיות לטיניות קטנות, ספרות ומקפים.";
+    const slug = d.slug || slugify(d.name);
+    if (!SLUG_PATTERN.test(slug)) errors.slug = "רק אותיות לטיניות קטנות, ספרות ומקפים.";
+    else if (slug === RESERVED_SLUG) errors.slug = "המזהה \"new\" שמור למערכת. בחרו מזהה אחר.";
   }
   if (step === "intent") {
     if (!d.vision.trim()) errors.vision = "איזה עולם אתם רוצים לראות?";
@@ -373,4 +379,33 @@ export function validateFile(file: ProjectFile): string[] {
   const parsed = projectFileSchema.safeParse(file);
   if (parsed.success) return [];
   return parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`);
+}
+
+// ------------------------------------------------------ create in Supabase ---
+
+export type PreparedProject = { ok: true; slug: string; args: CreateProjectArgs } | { ok: false; error: string };
+
+/**
+ * Everything the server checks before it asks the database to create a project, as a pure function:
+ * shape of the draft (never trust the browser), the wizard's own step rules, and the app's project
+ * schema. The slug is only the REQUESTED one — the database picks a free one (name, name-2, …).
+ * Identity, owner and publication state are not part of the result; the database decides them.
+ */
+export function prepareNewProject(rawDraft: unknown): PreparedProject {
+  const parsed = draftSchema.safeParse(rawDraft);
+  if (!parsed.success) return { ok: false, error: "חלק מהשדות ארוכים מדי או לא תקינים." };
+
+  const slug = parsed.data.slug.trim() || slugify(parsed.data.name);
+  const draft = { ...parsed.data, slug };
+  for (const step of ["identity", "intent", "details"] as StepId[]) {
+    const problems = Object.values(validateStep(step, draft));
+    if (problems.length) return { ok: false, error: problems[0] };
+  }
+
+  const project = projectSchema.safeParse(buildProject(draft));
+  if (!project.success) {
+    const issue = project.error.issues[0];
+    return { ok: false, error: `${issue?.path.join(".") || "המיזם"}: ${issue?.message ?? "לא תקין"}` };
+  }
+  return { ok: true, slug, args: projectToCreateArgs(project.data) };
 }

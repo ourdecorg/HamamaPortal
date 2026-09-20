@@ -10,6 +10,9 @@
  * source of truth and stewards edit their projects there. `--update` is for deliberately pushing a change
  * made in the JSON files; it never deletes needs/offers and never touches wishes, stewards or opportunities.
  *
+ * Projects created by people in the portal (wizard → Supabase) are never touched, even with --update:
+ * the seed is only bootstrap / demo data, and new projects never depend on it.
+ *
  * Uses the service-role key: run it from a trusted machine (see scripts/lib/admin.ts).
  */
 import { projectToRows } from "@/lib/project-mapper";
@@ -28,16 +31,24 @@ async function main() {
   }
 
   const admin = createAdminClient();
-  const { data: existing, error } = await admin.from("projects").select("id, slug");
+  const { data: existing, error } = await admin.from("projects").select("id, slug, created_by");
   if (error) throw new Error(`Could not read projects: ${error.message}`);
-  const idBySlug = new Map((existing ?? []).map((r: { id: string; slug: string }) => [r.slug, r.id]));
+  const bySlug = new Map((existing ?? []).map((r: { id: string; slug: string; created_by: string | null }) => [r.slug, r]));
 
   const counts = { created: 0, updated: 0, skipped: 0 };
 
   for (const project of projects) {
     const rows = projectToRows(project);
-    const existingId = idBySlug.get(project.slug);
+    const found = bySlug.get(project.slug);
+    const existingId = found?.id;
 
+    // Projects people created in the portal (created_by is set; seed rows have none) belong to their
+    // stewards. The seed never touches them, not even with --update.
+    if (found?.created_by) {
+      counts.skipped += 1;
+      console.log(`  skip     ${project.slug} (created in the portal — never overwritten)`);
+      continue;
+    }
     if (existingId && !update) {
       counts.skipped += 1;
       console.log(`  skip     ${project.slug} (already in Supabase)`);
