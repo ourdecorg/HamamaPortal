@@ -12,10 +12,10 @@ import {
   type ProjectWithItems,
 } from "@/lib/project-mapper";
 import { projectSchema } from "@/lib/schema";
-import type { ClaimState, SaveProjectResult } from "@/lib/stewardship";
+import type { ClaimState, CreateProjectResult, SaveProjectResult } from "@/lib/stewardship";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { applyDraft, draftSchema, validateStep, type StepId } from "@/lib/wizard";
+import { applyDraft, draftSchema, prepareNewProject, validateStep, type StepId } from "@/lib/wizard";
 import type { Need, Offer } from "@/types/project";
 
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -25,6 +25,42 @@ type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 function refresh(slug: string) {
   revalidatePath("/", "layout");
   revalidatePath(`/projects/${slug}`);
+}
+
+/**
+ * Publish a new project from the wizard, straight into Supabase.
+ *
+ * One database call: `create_project()` inserts the project, the caller's OWNER/APPROVED stewardship, the
+ * Needs and the Offers in a single transaction (nothing is left behind if any part fails) and picks a free
+ * slug. The client only sends the wizard draft: the owner is the session user (`auth.uid()` inside the
+ * function), and the slug, visibility and publication state are never taken from the draft.
+ * Claiming an EXISTING project is a different path (`claimProject`): pending, approved by an admin.
+ */
+export async function createProject(rawDraft: unknown): Promise<CreateProjectResult> {
+  if (!isSupabaseConfigured()) return { status: "error", error: "השמירה לא זמינה במצב הדגמה." };
+  const user = await getCurrentUser();
+  if (!user) return { status: "auth_required" };
+
+  const prepared = prepareNewProject(rawDraft);
+  if (!prepared.ok) return { status: "error", error: prepared.error };
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("create_project", prepared.args);
+  if (error) {
+    // 28000 / 42501: the session is gone or the role is not allowed to call the function.
+    if (error.code === "28000" || error.code === "42501") return { status: "auth_required" };
+    console.error("[hamama] createProject failed:", error.code, error.message);
+    return { status: "error", error: "לא הצלחנו ליצור את המיזם. לא נשמר דבר — אפשר לנסות שוב." };
+  }
+
+  const slug = (data as { slug?: unknown } | null)?.slug;
+  if (typeof slug !== "string" || !SLUG.test(slug)) {
+    console.error("[hamama] createProject: unexpected response", data);
+    return { status: "error", error: "לא הצלחנו ליצור את המיזם. נסו שוב." };
+  }
+  refresh(slug);
+  revalidatePath("/my-space");
+  return { status: "created", slug };
 }
 
 /**

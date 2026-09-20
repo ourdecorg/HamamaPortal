@@ -73,6 +73,11 @@ export type SaveProjectResult =
   | { status: "forbidden" }
   | { status: "error"; error: string };
 
+export type CreateProjectResult =
+  | { status: "created"; slug: string }
+  | { status: "auth_required" }
+  | { status: "error"; error: string };
+
 /**
  * The project as its steward sees it (drafts and private projects included), or null when the
  * current user cannot see it. Editing is additionally gated on an approved stewardship.

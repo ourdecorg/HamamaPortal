@@ -147,6 +147,25 @@ export function projectToRows(p: Project): ProjectRows {
   };
 }
 
+/**
+ * The arguments of the `create_project` database function (see 20260920130000_create_project.sql).
+ * Only content goes in: owner, publication state and ids are decided by the database, never by the caller.
+ * Wizard-made needs/offers carry no `key` (that is for imported seed data), like items added on edit.
+ */
+export interface CreateProjectArgs {
+  p_project: { slug: string } & ProjectContentPatch;
+  p_needs: NeedInsert[];
+  p_offers: OfferInsert[];
+}
+
+export function projectToCreateArgs(p: Project): CreateProjectArgs {
+  return {
+    p_project: { slug: p.slug, ...projectContent(p) },
+    p_needs: p.current_needs.map((n, i) => needToRow(n, i, null)),
+    p_offers: p.offers.map((o, i) => offerToRow(o, i, null)),
+  };
+}
+
 // ------------------------------------------------------- rows → project ----
 
 const byPosition = <T extends { position: number; created_at?: string }>(a: T, b: T) =>

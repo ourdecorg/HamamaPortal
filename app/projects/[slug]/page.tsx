@@ -6,6 +6,7 @@ import { ConnectionCard } from "@/components/ConnectionCard";
 import { DomainTag } from "@/components/DomainTag";
 import { NeedBadge } from "@/components/NeedBadge";
 import { OfferBadge } from "@/components/OfferBadge";
+import { ProjectCreatedNotice } from "@/components/ProjectCreatedNotice";
 import { ProjectStewardship } from "@/components/ProjectStewardship";
 import { DemoTag } from "@/components/ProjectCard";
 import { StageBadge } from "@/components/StageBadge";
@@ -40,10 +41,17 @@ function SectionTitle({ id, eyebrow, children }: { id: string; eyebrow?: string;
   );
 }
 
-export default async function ProjectPage({ params }: { params: Promise<Params> }) {
+export default async function ProjectPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
+  const justCreated = (await searchParams).created === "1";
 
   const connections = await getSuggestedConnections(project.slug);
   const openNeeds = project.current_needs.filter((n) => n.status !== "fulfilled");
@@ -60,6 +68,8 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
 
   return (
     <article>
+      {justCreated && <ProjectCreatedNotice project={project} />}
+
       {/* HERO ───────────────────────────────────────────────── */}
       <header className="relative overflow-hidden border-b border-line/70">
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-b from-leaf-50/70 via-transparent to-transparent" />
