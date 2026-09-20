@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { ResumeWish } from "@/components/ResumeWish";
 import { WishForm } from "@/components/WishForm";
+import { getCurrentUser } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
   title: "באר המשאלות",
@@ -13,6 +16,8 @@ export default async function WishesPage({
 }) {
   const sp = await searchParams;
   const q = (typeof sp.q === "string" ? sp.q : "").slice(0, 600);
+  const canSave = isSupabaseConfigured();
+  const signedIn = canSave && Boolean(await getCurrentUser());
 
   return (
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
@@ -29,7 +34,8 @@ export default async function WishesPage({
           </p>
         </header>
 
-        <WishForm initialWish={q} />
+        {sp.resume && <ResumeWish />}
+        <WishForm initialWish={q} canSave={canSave} signedIn={signedIn} />
       </div>
     </div>
   );

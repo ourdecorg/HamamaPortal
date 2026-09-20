@@ -1,0 +1,15 @@
+# Minimal Supabase CLI config, so `supabase link` / `supabase db push` and `supabase start` work from this
+# folder. The schema itself lives in ./migrations — apply them in filename order.
+# Setup guide: docs/SUPABASE.md
+project_id = "hamama-portal"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+
+# Google sign-in for a LOCAL stack (`supabase start`): set enabled = true and export
+# GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET. For a hosted project, configure Google in the dashboard instead.
+[auth.external.google]
+enabled = false
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"

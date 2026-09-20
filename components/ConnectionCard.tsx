@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowLeftRight, ArrowUpDown, CircleDashed, Gift, HelpCircle, Repeat2, Sparkles } from "lucide-react";
 import { DemoTag } from "@/components/ProjectCard";
-import { IntroDraft } from "@/components/IntroDraft";
+import { AdvanceConnection } from "@/components/AdvanceConnection";
 import { SignalMeter } from "@/components/SignalMeter";
 import { TypeIcon } from "@/components/TypeIcon";
 import { buttonVariants } from "@/components/ui/button";
@@ -198,7 +198,7 @@ export function ConnectionCard({ connection: c, variant = "full", perspectiveId,
               </li>
             ))}
           </ol>
-          <IntroDraft connection={c} />
+          <AdvanceConnection connection={c} />
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3 border-t border-link-100 bg-paper/60 px-5 py-4 sm:px-7">

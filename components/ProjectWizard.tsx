@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, CircleDashed, Copy, Download, Gift, Plus, Save, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { ArrowLeft, ArrowRight, Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { saveProjectEdits } from "@/app/projects/actions";
 import { ProjectCard } from "@/components/ProjectCard";
 import { TypeIcon } from "@/components/TypeIcon";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -29,8 +31,9 @@ import {
   type ItemDraft,
   type StepId,
 } from "@/lib/wizard";
+import { loginUrl } from "@/lib/next-path";
 import { cn } from "@/lib/utils";
-import type { GeographyScope } from "@/types/project";
+import type { GeographyScope, Need } from "@/types/project";
 
 // ------------------------------------------------------------------ bits ----
 
@@ -85,18 +88,23 @@ function StepIntro({ title, body }: { title: string; body: string }) {
 
 // -------------------------------------------------------- need / offer list --
 
+const NEED_STATUS_LABEL: Record<Need["status"], string> = { open: "פתוח", in_conversation: "בשיחה", fulfilled: "נענה" };
+
 function ItemEditor({
   kind,
   item,
   index,
   onChange,
   onRemove,
+  showStatus = false,
 }: {
   kind: "need" | "offer";
   item: ItemDraft;
   index: number;
   onChange: (patch: Partial<ItemDraft>) => void;
   onRemove: () => void;
+  /** Edit mode, needs only: a steward can mark a need as in conversation / fulfilled. */
+  showStatus?: boolean;
 }) {
   const isNeed = kind === "need";
   const Icon = isNeed ? CircleDashed : Gift;
@@ -126,6 +134,19 @@ function ItemEditor({
             ))}
           </div>
         </div>
+
+        {showStatus && isNeed && (
+          <div>
+            <p className="mb-2 text-sm font-medium text-ink">מצב הצורך</p>
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(NEED_STATUS_LABEL) as Need["status"][]).map((st) => (
+                <ToggleChip key={st} tone="need" active={(item.status ?? "open") === st} onClick={() => onChange({ status: st })}>
+                  {NEED_STATUS_LABEL[st]}
+                </ToggleChip>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <Label htmlFor={`${item.uid}-title`}>{isNeed ? "מה מחפשים — במשפט קצר?" : "מה מציעים — במשפט קצר?"}</Label>
@@ -180,8 +201,20 @@ function ItemEditor({
 
 // ----------------------------------------------------------------- wizard ----
 
-export function ProjectWizard() {
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
+interface ProjectWizardProps {
+  /** "create": the original flow (JSON preview / download). "edit": a steward updating a stored project. */
+  mode?: "create" | "edit";
+  initialDraft?: Draft;
+  /** Edit mode: the project being edited. Its slug (and so its URL) cannot change. */
+  slug?: string;
+}
+
+export function ProjectWizard({ mode = "create", initialDraft, slug: editSlug }: ProjectWizardProps) {
+  const editing = mode === "edit" && Boolean(editSlug);
+  const router = useRouter();
+  const [draft, setDraft] = useState<Draft>(initialDraft ?? emptyDraft);
+  const [saveState, setSaveState] = useState<{ ok: boolean; text: string } | null>(null);
+  const [saving_, startSaving] = useTransition();
   const [stepIndex, setStepIndex] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
@@ -199,7 +232,24 @@ export function ProjectWizard() {
   const file = useMemo(() => buildProjectFile(draft), [draft]);
   const fileIssues = useMemo(() => (isLast ? validateFile(file) : []), [file, isLast]);
   const json = useMemo(() => JSON.stringify(file, null, 2), [file]);
-  const slug = draft.slug || slugify(draft.name);
+  const slug = editing ? editSlug! : draft.slug || slugify(draft.name);
+
+  function saveEdits() {
+    setSaveState(null);
+    startSaving(async () => {
+      const res = await saveProjectEdits(editSlug!, draft);
+      if (res.status === "saved") {
+        router.push(`/projects/${editSlug}`);
+        router.refresh();
+      } else if (res.status === "auth_required") {
+        router.push(loginUrl(`/projects/${editSlug}/edit`));
+      } else if (res.status === "forbidden") {
+        setSaveState({ ok: false, text: "אין לכם הרשאה לערוך את המיזם הזה. ההרשאה ניתנת אחרי אישור בקשת הטיפוח." });
+      } else {
+        setSaveState({ ok: false, text: res.error });
+      }
+    });
+  }
 
   function next() {
     const found = validateStep(step, draft);
@@ -249,7 +299,7 @@ export function ProjectWizard() {
       const body = (await res.json()) as { file?: string; error?: string };
       setDevMessage(
         res.ok
-          ? { ok: true, text: `נשמר ב-${body.file}. רעננו את הדפדפן וחפשו את המיזם ברשימה.` }
+          ? { ok: true, text: `נשמר ב-${body.file}. כדי שהמיזם יופיע בפורטל, הריצו npm run db:seed.` }
           : { ok: false, text: body.error ?? "השמירה נכשלה." },
       );
     } catch {
@@ -327,18 +377,20 @@ export function ProjectWizard() {
                 <FieldError message={errors.short_description} />
               </div>
               <div>
-                <Label htmlFor="slug" hint="(משמש בכתובת ובשם הקובץ)">
+                <Label htmlFor="slug" hint={editing ? "(לא ניתן לשינוי)" : "(משמש בכתובת ובשם הקובץ)"}>
                   מזהה באנגלית
                 </Label>
                 <Input
                   id="slug"
                   dir="ltr"
-                  value={draft.slug || slugify(draft.name)}
+                  value={editing ? slug : draft.slug || slugify(draft.name)}
                   onChange={(e) => patch({ slug: e.target.value.toLowerCase(), slugTouched: true })}
-                  className="max-w-xs text-start"
+                  readOnly={editing}
+                  className={cn("max-w-xs text-start", editing && "bg-paper-2 text-ink-3")}
                 />
                 <Hint>
-                  הכתובת תהיה <span dir="ltr" className="font-mono text-ink-2">/projects/{slug}</span>
+                  {editing ? "הכתובת של המיזם נשארת כפי שהיא, כדי שקישורים קיימים ימשיכו לעבוד: " : "הכתובת תהיה "}
+                  <span dir="ltr" className="font-mono text-ink-2">/projects/{slug}</span>
                 </Hint>
                 <FieldError message={errors.slug} />
               </div>
@@ -401,6 +453,7 @@ export function ProjectWizard() {
                 <ItemEditor
                   key={n.uid}
                   kind="need"
+                  showStatus={editing}
                   item={n}
                   index={i}
                   onChange={(p) => patchItem("needs", n.uid, p)}
@@ -568,12 +621,63 @@ export function ProjectWizard() {
           </section>
         )}
 
-        {/* 6 · REVIEW */}
-        {step === "review" && (
+        {/* 6 · REVIEW — edit mode: save to the portal */}
+        {step === "review" && editing && (
+          <section>
+            <StepIntro
+              title="מוכנים לשמור?"
+              body="השינויים יופיעו בדף המיזם מיד, והחיבורים יחושבו מחדש לפי הצרכים וההצעות המעודכנים."
+            />
+
+            {fileIssues.length > 0 && (
+              <div role="alert" className="mb-6 rounded-2xl border border-need-200 bg-need-50 p-5 text-sm text-need-700">
+                <p className="mb-2 font-semibold">כמה דברים חסרים לפני שאפשר לשמור:</p>
+                <ul className="list-disc space-y-1 ps-5" dir="ltr">
+                  {fileIssues.slice(0, 6).map((i) => (
+                    <li key={i}>{i}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <dl className="grid gap-4 rounded-3xl border border-line bg-white/70 p-6 sm:grid-cols-3">
+              <div>
+                <dt className="text-sm text-ink-3">מיזם</dt>
+                <dd className="font-display text-xl font-bold text-leaf-900">{draft.name}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-ink-3">צרכים</dt>
+                <dd className="font-display text-xl font-bold text-need-700">{previewProject.current_needs.length}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-ink-3">הצעות</dt>
+                <dd className="font-display text-xl font-bold text-offer-700">{previewProject.offers.length}</dd>
+              </div>
+            </dl>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Button size="lg" onClick={saveEdits} disabled={saving_ || fileIssues.length > 0}>
+                {saving_ ? <Loader2 className="animate-spin" /> : <Save />}
+                {saving_ ? "שומר…" : "שמירת שינויים"}
+              </Button>
+              <Link href={`/projects/${editSlug}`} className={buttonVariants({ variant: "ghost", size: "lg" })}>
+                ביטול
+              </Link>
+            </div>
+            {saveState && (
+              <p role={saveState.ok ? "status" : "alert"} className={cn("mt-4 text-sm font-medium", saveState.ok ? "text-leaf-700" : "text-need-700")}>
+                {saveState.text}
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* 6 · REVIEW — create mode: a JSON file for the seed data */}
+        {step === "review" && !editing && (
           <section>
             <StepIntro
               title="הנה המיזם שלכם"
-              body="זה עדיין לא נשמר בשום מקום — אין כאן מסד נתונים. הורידו את הקובץ והניחו אותו בתיקייה, וכך הוא יופיע בפורטל."
+              body="הכלי הזה מכין קובץ JSON. הורידו אותו והניחו בתיקייה — מנהל/ת המערכת מייבא/ת אותו לפורטל."
             />
 
             {fileIssues.length > 0 && (
@@ -625,8 +729,9 @@ export function ProjectWizard() {
                 <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">/data/projects/</code>
               </li>
               <li>
-                <strong className="text-ink">2.</strong> הפעילו מחדש את האתר (או בנו אותו מחדש). הקובץ עצמו הוא ה&quot;אישור&quot;: אפשר לערוך אותו, ולשנות{" "}
-                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">review_status</code> ל-<code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">pending_review</code> כדי להסתיר אותו.
+                <strong className="text-ink">2.</strong> ייבאו אותו למסד הנתונים עם{" "}
+                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">npm run db:seed</code>. אפשר לערוך את הקובץ קודם, ולשנות{" "}
+                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">review_status</code> ל-<code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">pending_review</code> כדי שהמיזם לא יופיע עדיין.
               </li>
               <li>
                 <strong className="text-ink">3.</strong> חממה תזהה את הצרכים וההצעות שלכם ותציע חיבורים.
@@ -642,7 +747,7 @@ export function ProjectWizard() {
               <ArrowRight /> הקודם
             </Button>
           ) : (
-            <Link href="/projects" className={buttonVariants({ variant: "ghost" })}>
+            <Link href={editing ? `/projects/${editSlug}` : "/projects"} className={buttonVariants({ variant: "ghost" })}>
               ביטול
             </Link>
           )}
@@ -650,7 +755,7 @@ export function ProjectWizard() {
             <Button size="lg" onClick={next}>
               הבא <ArrowLeft />
             </Button>
-          ) : (
+          ) : editing ? null : (
             <Button variant="ghost" onClick={() => { setDraft(emptyDraft()); setStepIndex(0); }}>
               להתחיל מחדש
             </Button>

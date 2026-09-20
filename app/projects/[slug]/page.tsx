@@ -6,19 +6,16 @@ import { ConnectionCard } from "@/components/ConnectionCard";
 import { DomainTag } from "@/components/DomainTag";
 import { NeedBadge } from "@/components/NeedBadge";
 import { OfferBadge } from "@/components/OfferBadge";
+import { ProjectStewardship } from "@/components/ProjectStewardship";
 import { DemoTag } from "@/components/ProjectCard";
 import { StageBadge } from "@/components/StageBadge";
 import { buttonVariants } from "@/components/ui/button";
 import { t } from "@/lib/locale";
-import { getProjectBySlug, getProjects, getSuggestedConnections } from "@/lib/projects";
+import { getProjectBySlug, getSuggestedConnections } from "@/lib/projects";
 import { ACTIVITY_STATUS, GEOGRAPHY_SCOPES } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
 
 type Params = { slug: string };
-
-export async function generateStaticParams(): Promise<Params[]> {
-  return (await getProjects()).map((p) => ({ slug: p.slug }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const project = await getProjectBySlug((await params).slug);
@@ -253,6 +250,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
             ) : (
               <p className="text-sm text-ink-3">עוד לא נוספו אנשים למיזם.</p>
             )}
+            <ProjectStewardship project={project} />
           </div>
 
           <div>

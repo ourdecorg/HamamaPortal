@@ -8,9 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "check:data": "tsx scripts/check-data.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:rls": "tsx --test tests/rls.test.ts",
+    "test:mapper": "tsx --test tests/mapper.test.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "steward:approve": "tsx scripts/approve-steward.ts",
+    "test:seed": "tsx --test tests/seed.test.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.47.0",
@@ -21,6 +29,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
