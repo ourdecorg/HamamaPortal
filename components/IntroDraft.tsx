@@ -32,9 +32,9 @@ export function draftIntroduction(c: Connection): string {
   ].join("\n");
 }
 
-export function IntroDraft({ connection }: { connection: Connection }) {
+export function IntroDraft({ connection, defaultOpen = false }: { connection: Connection; defaultOpen?: boolean }) {
   const initial = useMemo(() => draftIntroduction(connection), [connection]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [text, setText] = useState(initial);
   const [copied, setCopied] = useState(false);
 

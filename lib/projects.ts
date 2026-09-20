@@ -1,82 +1,71 @@
 import { cache } from "react";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { t } from "@/lib/locale";
 import { connectionsFor, findConnections, findUnmetNeeds, type Connection, type UnmetNeed } from "@/lib/matching";
+import { rowsToProject, type ProjectWithItems } from "@/lib/project-mapper";
 import { filterProjects, hasOpenNeed, type ProjectFilters, type SearchHit } from "@/lib/search";
+import { projectSchema } from "@/lib/schema";
+import { readSeedProjects, type LoadedProjects } from "@/lib/seed-data";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createPublicClient } from "@/lib/supabase/server";
 import { domainLabel } from "@/lib/taxonomy";
-import { projectFileSchema } from "@/lib/schema";
 import type { Project, ProjectLoadIssue } from "@/types/project";
 
 /**
- * The data access layer — the ONLY place that knows projects live in JSON files.
+ * The data access layer — the ONLY place that knows where projects live.
  *
- * Pages and components call the functions exported here and never touch the
- * filesystem. To move to a database later, re-implement `loadAll()` (or the
- * exported functions) and keep their signatures; nothing else has to change.
+ * Runtime source of truth: Supabase (tables `projects`, `needs`, `offers`), read with the anonymous
+ * key so RLS returns exactly the public catalogue. The JSON files in /data/projects are seed data
+ * (see scripts/seed.ts); they are read here ONLY in demo mode, when Supabase is not configured.
  *
- * Server-only: this module uses node:fs. Client components should import the
- * pure modules (search, matching, taxonomy) instead.
+ * Pages and components call the functions exported here and never see either backend.
+ * Server-only (Supabase client + node:fs in demo mode). Client components import the pure modules
+ * (search, matching, taxonomy) instead.
  */
 
-const DATA_DIR = path.join(process.cwd(), "data", "projects");
+type Loaded = LoadedProjects;
 
-interface Loaded {
-  projects: Project[];
-  issues: ProjectLoadIssue[];
-}
+let warnedDemoMode = false;
 
-/** Read and validate every file. A bad file is reported, never fatal. */
-async function readAllFromDisk(): Promise<Loaded> {
-  const issues: ProjectLoadIssue[] = [];
+/** Public catalogue from Supabase. A malformed row is reported, never fatal; a failed query is. */
+async function readFromSupabase(): Promise<Loaded> {
+  const { data, error } = await createPublicClient()
+    .from("projects")
+    .select("*, needs(*), offers(*)")
+    .eq("review_status", "published")
+    .neq("visibility", "private");
+  if (error) throw new Error(`Could not load projects from Supabase: ${error.message}`);
+
   const projects: Project[] = [];
-
-  let files: string[] = [];
-  try {
-    files = (await fs.readdir(DATA_DIR)).filter((f) => f.endsWith(".json")).sort();
-  } catch {
-    issues.push({ file: "data/projects", message: "Could not read the projects directory." });
-    return { projects, issues };
-  }
-
-  const seen = new Set<string>();
-
-  for (const file of files) {
-    try {
-      const raw = await fs.readFile(path.join(DATA_DIR, file), "utf8");
-      const parsed = projectFileSchema.safeParse(JSON.parse(raw));
-      if (!parsed.success) {
-        const detail = parsed.error.issues
-          .slice(0, 3)
-          .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
-          .join("; ");
-        issues.push({ file, message: `Schema validation failed — ${detail}` });
-        continue;
-      }
-      const project = parsed.data.project;
-      if (seen.has(project.slug) || seen.has(project.id)) {
-        issues.push({ file, message: `Duplicate id/slug "${project.slug}" — skipped.` });
-        continue;
-      }
-      seen.add(project.slug);
-      seen.add(project.id);
-      projects.push(project);
-    } catch (err) {
-      issues.push({
-        file,
-        message: err instanceof SyntaxError ? `Invalid JSON — ${err.message}` : `Could not read file — ${String(err)}`,
-      });
+  const issues: ProjectLoadIssue[] = [];
+  for (const row of (data ?? []) as ProjectWithItems[]) {
+    const parsed = projectSchema.safeParse(rowsToProject(row));
+    if (parsed.success) {
+      projects.push(parsed.data);
+    } else {
+      const detail = parsed.error.issues
+        .slice(0, 3)
+        .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+        .join("; ");
+      issues.push({ file: `projects/${row.slug}`, message: `Schema validation failed — ${detail}` });
     }
   }
-
   if (issues.length && process.env.NODE_ENV !== "production") {
     for (const issue of issues) console.warn(`[hamama] skipped ${issue.file}: ${issue.message}`);
   }
   return { projects, issues };
 }
 
-/** Memoised per request (and per static render). Files are re-read on the next request. */
-const loadAll = cache(readAllFromDisk);
+async function readAll(): Promise<Loaded> {
+  if (isSupabaseConfigured()) return readFromSupabase();
+  if (!warnedDemoMode) {
+    warnedDemoMode = true;
+    console.warn("[hamama] Supabase is not configured — serving the read-only JSON demo data from /data/projects.");
+  }
+  return readSeedProjects();
+}
+
+/** Memoised per request. */
+const loadAll = cache(readAll);
 
 function isListed(p: Project): boolean {
   return p.portal.review_status === "published" && p.portal.visibility === "public";
@@ -104,7 +93,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   );
 }
 
-/** Files that were found but could not be used (malformed JSON, schema errors). */
+/** Records that were found but could not be used (malformed JSON / rows, schema errors). */
 export async function getLoadIssues(): Promise<ProjectLoadIssue[]> {
   return (await loadAll()).issues;
 }

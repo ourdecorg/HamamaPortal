@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Loader2, Lock, Sparkles } from "lucide-react";
 import { DiscoveryResults } from "@/components/DiscoveryResults";
+import { SaveWishPanel } from "@/components/SaveWishPanel";
 import { Button } from "@/components/ui/button";
 import { Label, Select, Textarea } from "@/components/ui/field";
 import { analyzeWish } from "@/app/wishes/actions";
@@ -12,7 +13,14 @@ import { cn } from "@/lib/utils";
 
 const EXAMPLE_WISH = "אני רוצה לעזור ליצור קהילה מקומית שבה שכנים משתפים יותר ידע ומשאבים.";
 
-export function WishForm({ initialWish = "" }: { initialWish?: string }) {
+interface WishFormProps {
+  initialWish?: string;
+  /** Supabase is configured, so a wish can be saved. Without it the form is analysis-only. */
+  canSave?: boolean;
+  signedIn?: boolean;
+}
+
+export function WishForm({ initialWish = "", canSave = false, signedIn = false }: WishFormProps) {
   const [state, formAction, pending] = useActionState(analyzeWish, {
     ...initialWishState,
     values: { ...initialWishState.values, wish: initialWish },
@@ -123,7 +131,9 @@ export function WishForm({ initialWish = "" }: { initialWish?: string }) {
           </Button>
           <p className="flex items-center gap-2 text-sm text-ink-3">
             <Lock className="size-4" aria-hidden="true" />
-            המשאלה לא נשמרת. היא נבדקת מול המיזמים הקיימים — ונעלמת.
+            {canSave
+              ? "המשאלה לא נשמרת אלא אם תבחרו בכך: קודם נבדוק אותה מול המיזמים הקיימים, ואז תחליטו."
+              : "המשאלה לא נשמרת. היא נבדקת מול המיזמים הקיימים — ונעלמת."}
           </p>
         </div>
       </form>
@@ -131,6 +141,11 @@ export function WishForm({ initialWish = "" }: { initialWish?: string }) {
       <div ref={resultRef} className="scroll-mt-header">
         {state.status === "ok" && state.result && (
           <div className="mt-16 border-t border-line-2 pt-14">
+            {canSave && (
+              <div className="mb-12">
+                <SaveWishPanel values={state.values} signedIn={signedIn} />
+              </div>
+            )}
             <DiscoveryResults result={state.result} />
           </div>
         )}

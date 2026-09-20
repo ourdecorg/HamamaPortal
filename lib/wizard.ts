@@ -1,5 +1,13 @@
-import { projectFileSchema } from "@/lib/schema";
-import type { GeographyScope, LifecycleStage, LocalizedText, Project, ProjectFile } from "@/types/project";
+import { z } from "zod";
+import { t } from "@/lib/locale";
+import {
+  activityStatusSchema,
+  geographyScopeSchema,
+  lifecycleStageSchema,
+  needStatusSchema,
+  projectFileSchema,
+} from "@/lib/schema";
+import type { GeographyScope, LifecycleStage, LocalizedText, Need, Offer, Project, ProjectFile, Steward } from "@/types/project";
 
 /**
  * The "add a project" wizard's model — pure functions, no React.
@@ -14,6 +22,10 @@ export interface ItemDraft {
   description: string;
   /** Comma separated, optional. */
   keywords: string;
+  /** Edit mode: the id of the existing need/offer this draft item stands for. New items have none. */
+  id?: string;
+  /** Needs only, edit mode: open / in conversation / fulfilled. */
+  status?: Need["status"];
 }
 
 export interface Draft {
@@ -161,6 +173,170 @@ export function buildProjectFile(d: Draft): ProjectFile {
     project: buildProject(d),
   };
 }
+
+// ------------------------------------------------------------ edit mode ------
+
+/** A Draft filled from an existing project, so the wizard can edit it. */
+export function draftFromProject(p: Project): Draft {
+  const steward = p.people.stewards[0];
+  return {
+    name: t(p.name),
+    slug: p.slug,
+    slugTouched: true,
+    tagline: t(p.tagline),
+    short_description: t(p.short_description),
+    vision: t(p.vision.future_world),
+    problem: t(p.problem_space.primary_problem),
+    desired_change: t(p.desired_change),
+    needs: p.current_needs.map((n) => ({
+      uid: `need-${n.id}`,
+      id: n.id,
+      type: n.type,
+      title: t(n.title),
+      description: t(n.description),
+      keywords: n.keywords.join(", "),
+      status: n.status,
+    })),
+    offers: p.offers.map((o) => ({
+      uid: `offer-${o.id}`,
+      id: o.id,
+      type: o.type,
+      title: t(o.title),
+      description: t(o.description),
+      keywords: o.keywords.join(", "),
+    })),
+    domains: p.domains,
+    stage: p.status.lifecycle_stage,
+    activity: p.status.activity_status,
+    scope: p.geography?.scope ?? "",
+    place: t(p.geography?.place),
+    collab: p.collaboration_preferences.types,
+    website: p.links.website ?? "",
+    linkedin: p.links.linkedin ?? "",
+    github: p.links.github ?? "",
+    steward_name: steward?.name ?? "",
+    steward_role: t(steward?.role),
+  };
+}
+
+/**
+ * Set the Hebrew text of a localized value. Unchanged text keeps the original object untouched, and
+ * a changed text keeps every other translation (the wizard only shows one language).
+ */
+function mergeLocalized(original: LocalizedText | undefined, next: string): LocalizedText {
+  const value = next.trim();
+  if (!original) return he(value);
+  const shown = t(original);
+  if (shown === value) return original;
+  return {
+    ...(original.default !== undefined ? { default: original.default === shown ? value : original.default } : {}),
+    translations: { ...original.translations, he: value },
+  };
+}
+
+/** Like mergeLocalized, for optional fields: empty text means "no value". */
+function optionalLocalized(original: LocalizedText | undefined, next: string): LocalizedText | undefined {
+  return next.trim() ? mergeLocalized(original, next) : undefined;
+}
+
+function applyStewards(original: Steward[], d: Draft): Steward[] {
+  const name = d.steward_name.trim();
+  if (!name) return original;
+  const { role: oldRole, ...rest } = original[0] ?? { name };
+  const role = optionalLocalized(oldRole, d.steward_role);
+  return [{ ...rest, name, ...(role ? { role } : {}) }, ...original.slice(1)];
+}
+
+/**
+ * The project as it should be after the wizard's edits. Identity (id, slug) and moderation state
+ * (`portal`) always come from the ORIGINAL — a steward cannot change them through a draft.
+ * Existing needs/offers keep their id; new ones get a temporary `new-N` id.
+ */
+export function applyDraft(original: Project, d: Draft): Project {
+  const needById = new Map(original.current_needs.map((n) => [n.id, n]));
+  const offerById = new Map(original.offers.map((o) => [o.id, o]));
+  const place = optionalLocalized(original.geography?.place, d.place);
+
+  return {
+    ...original,
+    name: mergeLocalized(original.name, d.name),
+    tagline: mergeLocalized(original.tagline, d.tagline),
+    short_description: mergeLocalized(original.short_description, d.short_description),
+    vision: { future_world: mergeLocalized(original.vision.future_world, d.vision) },
+    problem_space: { primary_problem: mergeLocalized(original.problem_space.primary_problem, d.problem) },
+    desired_change: mergeLocalized(original.desired_change, d.desired_change),
+    domains: d.domains,
+    status: { lifecycle_stage: d.stage, activity_status: d.activity },
+    geography: d.scope ? { scope: d.scope, ...(place ? { place } : {}) } : undefined,
+    people: { stewards: applyStewards(original.people.stewards, d) },
+    current_needs: d.needs
+      .filter((n) => n.description.trim() || n.title.trim())
+      .map((n, i): Need => {
+        const before = n.id ? needById.get(n.id) : undefined;
+        const title = optionalLocalized(before?.title, n.title);
+        return {
+          id: before?.id ?? `new-${i + 1}`,
+          type: n.type,
+          ...(title ? { title } : {}),
+          description: mergeLocalized(before?.description, n.description || n.title),
+          keywords: keywordList(n.keywords),
+          status: n.status ?? before?.status ?? "open",
+        };
+      }),
+    offers: d.offers
+      .filter((o) => o.description.trim() || o.title.trim())
+      .map((o, i): Offer => {
+        const before = o.id ? offerById.get(o.id) : undefined;
+        const title = optionalLocalized(before?.title, o.title);
+        return {
+          id: before?.id ?? `new-${i + 1}`,
+          type: o.type,
+          ...(title ? { title } : {}),
+          description: mergeLocalized(before?.description, o.description || o.title),
+          keywords: keywordList(o.keywords),
+        };
+      }),
+    collaboration_preferences: { types: d.collab },
+    links: { website: urlOrNull(d.website), linkedin: urlOrNull(d.linkedin), github: urlOrNull(d.github) },
+  };
+}
+
+const keyPattern = /^[a-z][a-z0-9_]*$/;
+
+const itemDraftSchema = z.object({
+  uid: z.string().max(120),
+  id: z.string().min(1).max(64).optional(),
+  type: z.string().regex(keyPattern),
+  title: z.string().max(200),
+  description: z.string().max(1500),
+  keywords: z.string().max(400),
+  status: needStatusSchema.optional(),
+});
+
+/** Server-side validation of a draft sent from the browser. Never trust the client's shape. */
+export const draftSchema: z.ZodType<Draft> = z.object({
+  name: z.string().max(200),
+  slug: z.string().max(80),
+  slugTouched: z.boolean(),
+  tagline: z.string().max(300),
+  short_description: z.string().max(3000),
+  vision: z.string().max(6000),
+  problem: z.string().max(6000),
+  desired_change: z.string().max(6000),
+  needs: z.array(itemDraftSchema).max(20),
+  offers: z.array(itemDraftSchema).max(20),
+  domains: z.array(z.string().regex(keyPattern)).max(12),
+  stage: lifecycleStageSchema,
+  activity: activityStatusSchema,
+  scope: z.union([geographyScopeSchema, z.literal("")]),
+  place: z.string().max(200),
+  collab: z.array(z.string().regex(keyPattern)).max(12),
+  website: z.string().max(300),
+  linkedin: z.string().max(300),
+  github: z.string().max(300),
+  steward_name: z.string().max(120),
+  steward_role: z.string().max(120),
+});
 
 export type StepId = "identity" | "intent" | "needs" | "offers" | "details" | "review";
 

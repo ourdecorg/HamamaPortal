@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Menu, Plus, X } from "lucide-react";
 import { Wordmark } from "@/components/Logo";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,7 +15,8 @@ const NAV = [
   { href: "/connections", label: "חיבורים" },
 ];
 
-export function SiteHeader() {
+/** `account` is a server-rendered slot (login link / user menu) supplied by the layout. */
+export function SiteHeader({ account }: { account?: ReactNode }) {
   const pathname = usePathname();
   // The menu is "open for a path": navigating elsewhere closes it without an effect.
   const [openPath, setOpenPath] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {account}
           <Link href="/projects/new" className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}>
             <Plus /> הוספת מיזם
           </Link>

@@ -12,10 +12,11 @@ A portal where future-oriented initiatives say what they are trying to change, w
 npm install
 npm run dev        # http://localhost:3000
 npm run build && npm start
-npm run check:data # validate /data/projects and print connections
+npm run check:data # validate the seed files in /data/projects (offline)
+npm test           # RLS policies, seed import and data mapping (in-process Postgres)
 ```
 
-Requires Node 20+. No database, no API key, no external service (fonts are fetched from Google Fonts at build time via `next/font`).
+Requires Node 20+. With no environment variables the app runs in read-only **demo mode** on the JSON files. To persist wishes, stewardship and connections, connect it to Supabase — see [docs/SUPABASE.md](docs/SUPABASE.md). (Fonts are fetched from Google Fonts at build time via `next/font`.)
 
 ## What is where
 
@@ -27,14 +28,23 @@ app/
   projects/new/page.tsx    5-step wizard → JSON preview / download
   discover/page.tsx        conversational discovery (one sentence → matches + reasons)
   connections/page.tsx     every possible connection + needs nobody answers yet
-  wishes/                  באר המשאלות (server action; nothing is stored)
+  wishes/                  באר המשאלות (analyse for everyone; "save this wish" needs sign-in)
+  login/, auth/            Supabase Auth: Google + magic link, server actions, /auth/callback
+  my-space/                המרחב שלי: my wishes, my projects, my connections
+  projects/[slug]/edit/    steward-only: the wizard, pre-filled
   api/projects/route.ts    DEV-ONLY: write a wizard file into /data/projects
 components/                ProjectCard, NeedBadge, OfferBadge, ConnectionCard, DomainTag,
                            EcosystemPulse, EcosystemMap, SearchBox, …
-data/projects/*.json       one file per project  ← the only source of truth
+proxy.ts                   keeps the Supabase session fresh (not an authorization layer)
+supabase/migrations/       schema + Row Level Security (the reproducible source of the database)
+data/projects/*.json       SEED / demo data: imported by `npm run db:seed`, read at runtime only in demo mode
+scripts/                   seed.ts, approve-steward.ts (service-role CLI), check-data.ts
+tests/                     RLS, seed and mapping tests
 lib/
-  schema.ts                Zod schema for a project file
-  projects.ts              data access layer (the ONLY module that touches the filesystem)
+  schema.ts                Zod schema for a project (the model the UI and matching read)
+  projects.ts              data access layer: Supabase at runtime (JSON only in demo mode)
+  project-mapper.ts        project ⇄ database rows (shared by the seed, the app and the tests)
+  supabase/, auth.ts       Supabase clients and the current user (verified server-side)
   matching.ts              connection engine
   discovery.ts             conversational discovery + LLM seam
   search.ts                keyword search with a relevance score
@@ -44,17 +54,17 @@ types/project.ts           types derived from the Zod schema
 
 ### Data layer
 
-Pages call `getProjects()`, `getProjectBySlug()`, `searchProjects()`, `getDomains()`, `getSuggestedConnections()`, `getConnections()`, `getEcosystemStats()` … from `lib/projects.ts` and never see the filesystem. To move to a database later, re-implement `readAllFromDisk()` in that file (or the exported functions) and keep the signatures.
+Pages call `getProjects()`, `getProjectBySlug()`, `searchProjects()`, `getDomains()`, `getSuggestedConnections()`, `getConnections()`, `getEcosystemStats()` … from `lib/projects.ts` and never see the backend. At runtime that is **Supabase** (`projects`, `needs`, `offers`); the connection engine and discovery still run over the same `Project` objects as before, so a steward's edit changes the matching immediately. Persistent objects — `wishes`, `project_stewards`, `opportunities` — are written by server actions with the user's own session, and Row Level Security decides what is allowed.
 
-A malformed file (bad JSON, failed validation, duplicate slug) is **skipped and reported**, never fatal: the rest of the site keeps working, `npm run check:data` lists what was skipped, and in development a notice appears on the home page.
+A malformed record (failed validation) is **skipped and reported**, never fatal.
 
 ### Adding a project
 
 1. Use **/projects/new**, then **Download JSON** — or copy any file in `data/projects/`.
-2. Put the file in `data/projects/` (file name = slug).
-3. Restart / rebuild. The file being there is the approval; set `portal.review_status` to `pending_review` (or `visibility` to `private`) to hide it.
+2. Put the file in `data/projects/` (file name = slug) and run `npm run db:seed`. It only adds what is missing and never overwrites what stewards edited. Set `portal.review_status` to `pending_review` (or `visibility` to `private`) to keep it hidden.
+3. Someone who looks after the project asks with **אני מטפח/ת את המיזם הזה**; an admin approves (`npm run steward:approve`); from then on they edit it on the site.
 
-In `npm run dev` only, the wizard also has a **save to project folder** button. The route (`app/api/projects/route.ts`) returns 404 outside development, accepts localhost only, refuses cross-origin requests, validates with the same Zod schema, derives the file name from the validated slug, and never overwrites an existing file.
+In `npm run dev` only, the wizard also has a **save to project folder** button (it writes the JSON file; run the seed afterwards). The route (`app/api/projects/route.ts`) returns 404 outside development, accepts localhost only, refuses cross-origin requests, validates with the same Zod schema, derives the file name from the validated slug, and never overwrites an existing file.
 
 ### The connection engine (`lib/matching.ts`)
 
@@ -86,8 +96,8 @@ Tip: add English `keywords` to needs and offers in the JSON. They make matching 
 
 ## Not built (on purpose)
 
-Auth, database, accounts, messaging, feeds, tokens, reputation, voting, embeddings, agents, moderation, notifications.
+Messaging, feeds, tokens, reputation, voting, embeddings, agents, moderation tools, notifications. (Accounts, a database and persistence exist now, but stay deliberately small — see the deferred list in [docs/SUPABASE.md](docs/SUPABASE.md).)
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · shadcn/ui-style primitives (`components/ui`) · lucide-react · Zod.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · shadcn/ui-style primitives (`components/ui`) · lucide-react · Zod · Supabase (Postgres, Auth, RLS) via `@supabase/ssr`. Hosted on Railway.
