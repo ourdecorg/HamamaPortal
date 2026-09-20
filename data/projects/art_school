@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "_comment": "Created with the Hamama portal wizard. Place this file in /data/projects/ to publish it.",
+  "project": {
+    "id": "art-school",
+    "slug": "art-school",
+    "name": {
+      "default": "בית הספר הוירטואלי לאומנויות",
+      "translations": {
+        "he": "בית הספר הוירטואלי לאומנויות"
+      }
+    },
+    "tagline": {
+      "translations": {
+        "he": "ללמוד אומנות מהבית"
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "ללמוד את האומנויות האהובות עליך מהמקום הנוח לך."
+      }
+    },
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "אומנים ותלמידים נפגשים ללמד וללמוד במרחב וירטואלי של כפר דיגיטלי מקצועות שונים."
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "תלמידים צריכים להגיע פיזית לבית הספר בזמן ובמקום, הנקבעים על ידי בית הספר.\nהדבר משבש את היכולת להתפרנס או לקיים מטלות אישיות ומשפחתיות אחרות, הנדרשות לביצוע במועדי השיעורים ובמהלך הזמן, הנדרש להשקיע בנסיעות הלוך וחזור אל ומבית הספר."
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "לאפשר לתלמידים לחסוך את הצורך בנסיעות.\nלאפשר לתלמידים להתחבר וללמוד את התכנים במועדים נוחים במידה ולא יכולים להתחבר במועד השיעור.\nלאפשר למדריכים לשמור שיעורים מוקלטים ותכנים אחרים בספרייה דיגיטלית זמינה לתלמידים לשימוש בכל זמן.\nלאפשר לתלמידים ולמדריכים מרחב נוח להיפגש, לדון ולתרגל.\nלהוזיל את הלימודים ע\"י חיסכון עלויות השכרת כיתות פיזיות."
+      }
+    },
+    "domains": [
+      "education"
+    ],
+    "status": {
+      "lifecycle_stage": "idea",
+      "activity_status": "forming"
+    },
+    "geography": {
+      "scope": "remote"
+    },
+    "people": {
+      "stewards": [
+        {
+          "name": "מורן שמואלי",
+          "role": {
+            "translations": {
+              "he": "מייסד"
+            }
+          }
+        }
+      ]
+    },
+    "current_needs": [
+      {
+        "id": "need-1",
+        "type": "space",
+        "title": {
+          "translations": {
+            "he": "מרחב וירטואלי כדוגמת כפר דיגיטלי"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "המרחב הוירטואלי יהיה המקום שבו יתאפשר לקיים את המפגשים בין המדריכים והתלמידים ובין התלמידים עצמם."
+          }
+        },
+        "keywords": [],
+        "status": "open"
+      }
+    ],
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "ידע מקצועי בתחומי האומנות השונים"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "פירוט הידע יינתן ע\"י המדריכים, שיצטרפו לבית הספר."
+          }
+        },
+        "keywords": []
+      }
+    ],
+    "collaboration_preferences": {
+      "types": [
+        "pilot",
+        "co_creation",
+        "mentoring"
+      ]
+    },
+    "links": {
+      "website": null,
+      "linkedin": null,
+      "github": null
+    },
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-20",
+      "is_demo": false
+    }
+  }
+}
