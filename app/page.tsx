@@ -62,7 +62,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink-2 sm:text-xl">
-              חממה מחברת בין <strong className="font-semibold text-ink">רעיונות, מיזמים, צרכים, יכולות ואנשים</strong>.
+              החממה מחברת בין <strong className="font-semibold text-ink">רעיונות, מיזמים, צרכים, יכולות ואנשים</strong>.
               ספרו מה אתם רוצים לראות בעולם — ונראה מי כבר בדרך, מה הם צריכים, ומה אפשר לעשות יחד.
             </p>
 

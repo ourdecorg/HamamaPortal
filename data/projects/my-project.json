@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "_comment": "Created with the Hamama portal wizard. Place this file in /data/projects/ to publish it.",
+  "project": {
+    "id": "my-project",
+    "slug": "my-project",
+    "name": {
+      "default": "בדיקה",
+      "translations": {
+        "he": "בדיקה"
+      }
+    },
+    "tagline": {
+      "translations": {
+        "he": "לא יודע"
+      }
+    },
+    "short_description": {
+      "translations": {
+        "he": "באמת לא יודע"
+      }
+    },
+    "vision": {
+      "future_world": {
+        "translations": {
+          "he": "משופר"
+        }
+      }
+    },
+    "problem_space": {
+      "primary_problem": {
+        "translations": {
+          "he": "אין לי מושג"
+        }
+      }
+    },
+    "desired_change": {
+      "translations": {
+        "he": "יותר חופש"
+      }
+    },
+    "domains": [
+      "communities"
+    ],
+    "status": {
+      "lifecycle_stage": "idea",
+      "activity_status": "active"
+    },
+    "people": {
+      "stewards": []
+    },
+    "current_needs": [],
+    "offers": [
+      {
+        "id": "offer-1",
+        "type": "knowledge",
+        "title": {
+          "translations": {
+            "he": "כלום"
+          }
+        },
+        "description": {
+          "translations": {
+            "he": "כלום"
+          }
+        },
+        "keywords": []
+      }
+    ],
+    "collaboration_preferences": {
+      "types": []
+    },
+    "links": {
+      "website": null,
+      "linkedin": null,
+      "github": null
+    },
+    "portal": {
+      "visibility": "public",
+      "review_status": "published",
+      "last_updated": "2026-09-20",
+      "is_demo": false
+    }
+  }
+}
