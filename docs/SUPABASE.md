@@ -1,4 +1,4 @@
-# Supabase setup — חממה
+# Supabase setup — החממה
 
 Hamama runs on **Railway** (the Next.js app) and stores everything in **Supabase** (PostgreSQL, Auth, Row Level Security).
 

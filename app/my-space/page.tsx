@@ -371,7 +371,7 @@ export default async function MySpacePage({
         <MyProjects />
       </Section>
 
-      <Section id="my-connections" eyebrow="חיבורים" title="החיבורים שלי" hint="חיבורים שסימנתם שאתם רוצים לקדם. חממה לא פונה לאף אחד בשמכם — הצעד הבא הוא שלכם.">
+      <Section id="my-connections" eyebrow="חיבורים" title="החיבורים שלי" hint="חיבורים שסימנתם שאתם רוצים לקדם. החממה לא פונה לאף אחד בשמכם — הצעד הבא הוא שלכם.">
         <MyConnections opportunities={opportunities} projects={projects} />
       </Section>
     </div>

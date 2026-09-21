@@ -47,7 +47,7 @@ export default async function ConnectionsPage({
           <span className="text-link-500">האפשרויות שבין המיזמים.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2 sm:text-xl">
-          חממה קוראת מה כל מיזם צריך ומה הוא מציע, ומחפשת איפה שני אלה נפגשים. כל חיבור כאן מגיע עם הסבר — למה הוא עשוי לעבוד, ומה עדיין צריך לברר.
+          החממה קוראת מה כל מיזם צריך ומה הוא מציע, ומחפשת איפה שני אלה נפגשים. כל חיבור כאן מגיע עם הסבר — למה הוא עשוי לעבוד, ומה עדיין צריך לברר.
         </p>
 
         <ul className="mt-12 grid gap-x-8 gap-y-6 border-t border-line-2 pt-8 sm:grid-cols-2 lg:grid-cols-4">

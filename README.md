@@ -1,4 +1,4 @@
-# חממה | פורטל מיזמי עתיד
+# החממה | פורטל מיזמי עתיד
 
 **Future Initiatives Portal** — infrastructure for collective agency.
 

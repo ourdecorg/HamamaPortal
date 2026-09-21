@@ -21,7 +21,7 @@ export function draftIntroduction(c: Connection): string {
   return [
     `היי ${joinNames(a.stewards, `צוות ${a.name}`)} ו${joinNames(b.stewards, `צוות ${b.name}`)},`,
     "",
-    `בפורטל חממה עלה חיבור אפשרי בין ${a.name} ${withPrefix("ל", b.name)}:`,
+    `בפורטל החממה עלה חיבור אפשרי בין ${a.name} ${withPrefix("ל", b.name)}:`,
     `• ${a.name} מחפש: ${c.need.label}`,
     `• ${b.name} מציע: ${c.offer.label}`,
     "",
@@ -59,7 +59,7 @@ export function IntroDraft({ connection, defaultOpen = false }: { connection: Co
   return (
     <div className="w-full rounded-2xl border border-link-200 bg-white/80 p-4">
       <p className="mb-2 text-sm text-ink-2">
-        טיוטה שאפשר לערוך ולשלוח בעצמכם. חממה לא שולחת דבר בשמכם — <strong className="font-semibold text-ink">אתם מחליטים.</strong>
+        טיוטה שאפשר לערוך ולשלוח בעצמכם. החממה לא שולחת דבר בשמכם — <strong className="font-semibold text-ink">אתם מחליטים.</strong>
       </p>
       <textarea
         value={text}
