@@ -14,8 +14,8 @@ const assistant = Assistant({
 
 export const metadata: Metadata = {
   title: {
-    default: "חממה | פורטל מיזמי עתיד",
-    template: "%s | חממה",
+    default: "החממה | פורטל מיזמי עתיד",
+    template: "%s | החממה",
   },
   description:
     "Future Initiatives Portal — תשתית לפעולה משותפת. גלו מיזמי עתיד, מה הם צריכים, מה הם מציעים, ואיפה אפשר לחבר ביניהם.",
