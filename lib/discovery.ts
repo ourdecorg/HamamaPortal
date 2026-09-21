@@ -1,6 +1,9 @@
 import { z } from "zod";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
+import { fmt, joinList } from "@/lib/i18n/format";
+import { getMessagesFor } from "@/lib/i18n/messages";
 import { allVariants, shortLabel, t, withPrefix } from "@/lib/locale";
-import { scoreProject, SEARCH_FIELD_LABELS } from "@/lib/search";
+import { scoreProject } from "@/lib/search";
 import { GEOGRAPHY_SCOPES, domainLabel, exchangeType } from "@/lib/taxonomy";
 import { stemsWithWords } from "@/lib/text";
 import { detectIntent, detectTopics, type Intent } from "@/lib/topics";
@@ -36,10 +39,12 @@ export interface DiscoveryInput {
   query: string;
   projects: Project[];
   context?: DiscoveryContext;
+  /** The language the explanations are written in. Defaults to Hebrew. */
+  locale?: Locale;
 }
 
 export interface Interpretation {
-  /** One friendly sentence: "הבנו שאתם מחפשים…". */
+  /** One friendly sentence: "we understood that you are looking for…". */
   summary: string;
   intent: Intent;
   topics: { id: string; label: string }[];
@@ -107,8 +112,11 @@ function sharedWords(userText: string, otherText: string): string[] {
   return hits;
 }
 
-function quoteList(words: string[], max = 3): string {
-  return words.slice(0, max).map((w) => `«${w}»`).join(", ");
+function quoteList(words: string[], quote: string, max = 3): string {
+  return words
+    .slice(0, max)
+    .map((w) => fmt(quote, { text: w }))
+    .join(", ");
 }
 
 function scoreOne(
@@ -120,8 +128,13 @@ function scoreOne(
     offerTopics: ReturnType<typeof detectTopics>;
     intent: Intent;
     context: DiscoveryContext;
+    locale: Locale;
   },
 ): { score: number; reasons: (DiscoveryReason & { weight: number })[] } {
+  const { locale } = ctx;
+  const messages = getMessagesFor(locale);
+  const m = messages.discovery.reasons;
+  const quote = messages.common.quote;
   const reasons: (DiscoveryReason & { weight: number })[] = [];
   let score = 0;
 
@@ -130,11 +143,14 @@ function scoreOne(
   // Someone offering cares more about what a project *needs* than what it says.
   score += ctx.offerText.trim() ? text.score * 0.5 : text.score;
   if (text.matched_terms.length) {
-    const where = text.matched_fields.slice(0, 2).map((f) => SEARCH_FIELD_LABELS[f]).join(" ו");
+    const where = text.matched_fields
+      .slice(0, 2)
+      .map((f) => messages.search.fields[f])
+      .join(messages.search.fieldJoin);
     reasons.push({
       kind: "words",
       weight: 3 + Math.min(text.matched_terms.length, 3),
-      text: `${quoteList(text.matched_terms)} מופיעות ${where} של המיזם.`,
+      text: fmt(m.words, { words: quoteList(text.matched_terms, quote), where }),
     });
   }
 
@@ -146,7 +162,11 @@ function scoreOne(
       reasons.push({
         kind: "topic",
         weight: 3,
-        text: `המיזם עוסק ${withPrefix("ב", domainLabel(shared[0]))} — קרוב למה שכתבתם על ${topic.label}.`,
+        text: fmt(m.topic, {
+          domain: domainLabel(shared[0], locale),
+          domain_bet: withPrefix("ב", domainLabel(shared[0], locale)),
+          topic: topic.label[locale],
+        }),
       });
     }
   }
@@ -154,7 +174,7 @@ function scoreOne(
   // 3) A domain chosen explicitly in the form.
   if (ctx.context.domain && project.domains.includes(ctx.context.domain)) {
     score += 4;
-    reasons.push({ kind: "domain", weight: 4, text: `המיזם פועל בתחום ${domainLabel(ctx.context.domain)}, שבחרתם.` });
+    reasons.push({ kind: "domain", weight: 4, text: fmt(m.domain, { domain: domainLabel(ctx.context.domain, locale) }) });
   }
 
   // 4) Someone seeking: does the project OFFER something that fits?
@@ -164,8 +184,8 @@ function scoreOne(
     const typeHit = ctx.topics.some(({ topic }) => topic.types.includes(offer.type));
     const s = words.length * 2 + (typeHit ? 2 : 0);
     if (s > 0 && (!bestOffer || s > bestOffer.score)) {
-      const why = words.length ? ` (${quoteList(words, 2)})` : ` (${exchangeType(offer.type).he})`;
-      bestOffer = { score: s, text: `המיזם מציע «${shortLabel(offer)}»${why} — זה יכול לענות על מה שאתם מחפשים.` };
+      const why = words.length ? ` (${quoteList(words, quote, 2)})` : ` (${exchangeType(offer.type)[locale]})`;
+      bestOffer = { score: s, text: fmt(m.offer, { label: fmt(quote, { text: shortLabel(offer, locale) }), why }) };
     }
   }
   if (bestOffer && ctx.intent !== "offering") {
@@ -184,7 +204,7 @@ function scoreOne(
       if (s > 0 && (!bestNeed || s > bestNeed.score)) {
         bestNeed = {
           score: s,
-          text: `המיזם מחפש «${shortLabel(need)}» — זה מתחבר למה שיש לכם להציע.`,
+          text: fmt(m.need, { label: fmt(quote, { text: shortLabel(need, locale) }) }),
         };
       }
     }
@@ -201,7 +221,7 @@ function scoreOne(
     reasons.push({
       kind: "scope",
       weight: 1,
-      text: `המיזם פועל ברמה ${GEOGRAPHY_SCOPES[scope].he}, כמו שציינתם.`,
+      text: fmt(m.scope, { scope: GEOGRAPHY_SCOPES[scope][locale].toLocaleLowerCase(locale) }),
     });
   }
 
@@ -213,24 +233,20 @@ function buildInterpretation(
   context: DiscoveryContext,
   topics: ReturnType<typeof detectTopics>,
   intent: Intent,
+  locale: Locale,
 ): Interpretation {
-  const labels = topics.slice(0, 4).map((x) => x.topic.label);
-  const list = labels.length > 1 ? `${labels.slice(0, -1).join(", ")} ו${labels[labels.length - 1]}` : labels[0];
+  const m = getMessagesFor(locale).discovery.summaries;
+  const labels = topics.slice(0, 4).map((x) => x.topic.label[locale]);
+  const list = joinList(labels, locale);
   const hasOffer = Boolean(context.offer?.trim());
 
   let summary: string;
-  if (!labels.length) {
-    summary = "לא זיהינו נושא מוכר במשאלה — נחפש לפי המילים שכתבתם.";
-  } else if (intent === "offering") {
-    summary = `הבנו שאתם רוצים לתרום, ושהנושאים שקרובים אליכם הם ${list}.`;
-  } else if (intent === "creating") {
-    summary = `הבנו שאתם רוצים ליצור משהו סביב ${list}.`;
-  } else if (intent === "seeking") {
-    summary = `הבנו שאתם מחפשים מיזמים שעוסקים ב${list}.`;
-  } else {
-    summary = `הבנו שמעניינים אתכם הנושאים ${list}.`;
-  }
-  if (hasOffer && intent !== "offering") summary += " וגם שיש לכם משהו להציע.";
+  if (!labels.length) summary = m.none;
+  else if (intent === "offering") summary = fmt(m.offering, { list });
+  else if (intent === "creating") summary = fmt(m.creating, { list });
+  else if (intent === "seeking") summary = fmt(m.seeking, { list });
+  else summary = fmt(m.exploring, { list });
+  if (hasOffer && intent !== "offering") summary += m.withOffer;
 
   const domains = [
     ...new Set([...(context.domain ? [context.domain] : []), ...topics.flatMap((x) => x.topic.domains)]),
@@ -240,57 +256,50 @@ function buildInterpretation(
   return {
     summary,
     intent,
-    topics: topics.map((x) => ({ id: x.topic.id, label: x.topic.label })),
+    topics: topics.map((x) => ({ id: x.topic.id, label: x.topic.label[locale] })),
     domains,
     keywords,
     has_offer: hasOffer,
   };
 }
 
-function buildActions(query: string, intent: Intent, matches: DiscoveryMatch[], hasOffer: boolean): SuggestedAction[] {
+/** Hrefs are site-relative and locale-less; the app's <Link> adds the language prefix. */
+function buildActions(
+  query: string,
+  intent: Intent,
+  matches: DiscoveryMatch[],
+  hasOffer: boolean,
+  locale: Locale,
+): SuggestedAction[] {
+  const m = getMessagesFor(locale).discovery.actions;
   const actions: SuggestedAction[] = [];
   const top = matches[0]?.project;
 
   if (top) {
     actions.push({
-      label: `להכיר את ${t(top.name)}`,
+      label: fmt(m.meet.label, { name: t(top.name, locale) }),
       href: `/projects/${top.slug}`,
-      hint: "קראו את הסיפור המלא, מה הם צריכים ומה הם מציעים.",
+      hint: m.meet.hint,
     });
   }
   if (intent === "offering" || hasOffer) {
-    actions.push({
-      label: "לעיין בצרכים הפתוחים",
-      href: "/projects?exchange=needs",
-      hint: "כל המיזמים שמחפשים משהו עכשיו.",
-    });
+    actions.push({ label: m.needs.label, href: "/projects?exchange=needs", hint: m.needs.hint });
   }
   if (matches.length > 1) {
-    actions.push({
-      label: "לראות חיבורים בין המיזמים",
-      href: "/connections",
-      hint: "אולי מה שחיפשתם קורה בין שני מיזמים.",
-    });
+    actions.push({ label: m.connections.label, href: "/connections", hint: m.connections.hint });
   }
   if (intent === "creating" || matches.length < 2) {
-    actions.push({
-      label: "להוסיף מיזם משלכם",
-      href: "/projects/new",
-      hint: "אם זה עוד לא קיים — אולי הגיע הזמן שיתחיל.",
-    });
+    actions.push({ label: m.add.label, href: "/projects/new", hint: m.add.hint });
   }
   if (query.trim()) {
-    actions.push({
-      label: "לחפש בפירוט בין כל המיזמים",
-      href: `/projects?q=${encodeURIComponent(query.trim())}`,
-    });
+    actions.push({ label: m.search.label, href: `/projects?q=${encodeURIComponent(query.trim())}` });
   }
   return actions.slice(0, 4);
 }
 
 export const heuristicProvider: DiscoveryProvider = {
   id: "heuristic",
-  async discover({ query, projects, context = {} }) {
+  async discover({ query, projects, context = {}, locale = DEFAULT_LOCALE }) {
     const wishText = [query, context.outcome].filter(Boolean).join(" ");
     const intent = detectIntent(query);
     // When someone says "I want to contribute…", the query itself is the offer.
@@ -302,7 +311,7 @@ export const heuristicProvider: DiscoveryProvider = {
     const scored = projects
       .map((project) => ({
         project,
-        ...scoreOne(project, { wishText, offerText, topics, offerTopics, intent, context }),
+        ...scoreOne(project, { wishText, offerText, topics, offerTopics, intent, context, locale }),
       }))
       .filter((x) => x.score >= MIN_SCORE)
       .sort((a, b) => b.score - a.score)
@@ -317,13 +326,13 @@ export const heuristicProvider: DiscoveryProvider = {
         .map(({ kind, text }) => ({ kind, text }));
     }
 
-    const interpretation = buildInterpretation(query, context, topics, intent);
+    const interpretation = buildInterpretation(query, context, topics, intent, locale);
     return {
       engine: "heuristic",
       interpretation,
       matches,
       reasons,
-      suggested_actions: buildActions(query, intent, matches, interpretation.has_offer),
+      suggested_actions: buildActions(query, intent, matches, interpretation.has_offer, locale),
     };
   },
 };
@@ -352,18 +361,20 @@ export function createLlmProvider(client: LlmClient, fallback: DiscoveryProvider
     id: "llm",
     async discover(input) {
       // The model sees a compact digest of real projects and must answer in JSON.
+      const locale = input.locale ?? DEFAULT_LOCALE;
       const digest = input.projects.map((p) => ({
         slug: p.slug,
-        name: t(p.name),
-        change: t(p.desired_change),
+        name: t(p.name, locale),
+        change: t(p.desired_change, locale),
         domains: p.domains,
-        needs: p.current_needs.map((n) => shortLabel(n)),
-        offers: p.offers.map((o) => shortLabel(o)),
+        needs: p.current_needs.map((n) => shortLabel(n, locale)),
+        offers: p.offers.map((o) => shortLabel(o, locale)),
       }));
       const raw = await client.complete({
         system:
           "You match a person's wish to existing initiatives. Only use slugs from the list. " +
-          "Explain each match in one Hebrew sentence. Reply with JSON: {summary, topics, matches:[{slug, reasons}]}.",
+          `Explain each match in one ${getMessagesFor(locale).discovery.llmLanguage} sentence. ` +
+          "Reply with JSON: {summary, topics, matches:[{slug, reasons}]}.",
         user: JSON.stringify({ wish: input.query, context: input.context ?? {}, projects: digest }),
       });
 

@@ -1,7 +1,8 @@
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 import type { LocalizedText } from "@/types/project";
 
-export type Locale = "he" | "en";
-export const DEFAULT_LOCALE: Locale = "he";
+export { DEFAULT_LOCALE };
+export type { Locale };
 
 /** Resolve a localized text: requested locale → default → the other language. */
 export function t(text: LocalizedText | undefined | null, locale: Locale = DEFAULT_LOCALE): string {

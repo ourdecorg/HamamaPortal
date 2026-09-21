@@ -3,8 +3,10 @@
 import { useActionState } from "react";
 import { Loader2, Mail } from "lucide-react";
 import { signInWithEmail, signInWithGoogle, type MagicLinkState } from "@/app/auth/actions";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/field";
+import { fmt } from "@/lib/i18n/format";
 
 const initial: MagicLinkState = { status: "idle" };
 
@@ -22,35 +24,37 @@ function GoogleMark() {
 /** Google first, then a magic link by email. No passwords. */
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(signInWithEmail, initial);
+  const locale = useLocale();
+  const m = useMessages().login;
 
   return (
     <div className="space-y-8">
       <form action={signInWithGoogle}>
         <input type="hidden" name="next" value={next} />
+        <input type="hidden" name="locale" value={locale} />
         <Button type="submit" variant="secondary" size="lg" className="w-full">
           <GoogleMark />
-          המשך עם Google
+          {m.google}
         </Button>
       </form>
 
       <div className="flex items-center gap-4 text-sm text-ink-3" aria-hidden="true">
         <span className="h-px flex-1 bg-line-2" />
-        או
+        {m.or}
         <span className="h-px flex-1 bg-line-2" />
       </div>
 
       {state.status === "sent" ? (
         <div role="status" className="rounded-2xl border border-leaf-200 bg-leaf-50/80 p-5 text-leaf-900">
-          <p className="font-semibold">שלחנו קישור כניסה אל {state.email}</p>
-          <p className="mt-1 text-sm text-ink-2">
-            פתחו את המייל באותו דפדפן ולחצו על הקישור. אם לא הגיע — בדקו בספאם.
-          </p>
+          <p className="font-semibold">{fmt(m.sentTitle, { email: state.email ?? "" })}</p>
+          <p className="mt-1 text-sm text-ink-2">{m.sentBody}</p>
         </div>
       ) : (
         <form action={action} className="space-y-4">
           <input type="hidden" name="next" value={next} />
+          <input type="hidden" name="locale" value={locale} />
           <div>
-            <Label htmlFor="email">כניסה עם קישור במייל</Label>
+            <Label htmlFor="email">{m.emailLabel}</Label>
             <Input
               id="email"
               name="email"
@@ -71,7 +75,7 @@ export function LoginForm({ next }: { next: string }) {
           </div>
           <Button type="submit" size="lg" className="w-full" disabled={pending}>
             {pending ? <Loader2 className="animate-spin" /> : <Mail />}
-            שלחו לי קישור
+            {m.sendLink}
           </Button>
         </form>
       )}

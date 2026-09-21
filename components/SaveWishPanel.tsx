@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { BookmarkPlus, Check, Loader2 } from "lucide-react";
-import { saveWish } from "@/app/wishes/actions";
+import { saveWish } from "@/app/[lang]/wishes/actions";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { loginUrl } from "@/lib/next-path";
 import { rememberWishDraft, type WishValues } from "@/lib/wish";
@@ -17,6 +18,8 @@ import { cn } from "@/lib/utils";
  */
 export function SaveWishPanel({ values, signedIn }: { values: WishValues; signedIn: boolean }) {
   const router = useRouter();
+  const locale = useLocale();
+  const m = useMessages().wish;
   const [pending, start] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,11 +27,11 @@ export function SaveWishPanel({ values, signedIn }: { values: WishValues; signed
   function save() {
     setError(null);
     start(async () => {
-      const res = await saveWish(values);
+      const res = await saveWish(values, locale);
       if (res.status === "saved") setSaved(true);
       else if (res.status === "auth_required") {
         rememberWishDraft(values);
-        router.push(loginUrl("/wishes?resume=1"));
+        router.push(loginUrl("/wishes?resume=1", locale));
       } else setError(res.error);
     });
   }
@@ -40,10 +43,10 @@ export function SaveWishPanel({ values, signedIn }: { values: WishValues; signed
           <span className="grid size-8 place-items-center rounded-full bg-leaf-600 text-white">
             <Check className="size-4" aria-hidden="true" />
           </span>
-          המשאלה נשמרה — והיא פרטית, רק אתם רואים אותה.
+          {m.savedTitle}
         </p>
         <Link href="/my-space" className={buttonVariants({ variant: "primary", size: "sm" })}>
-          למרחב שלי
+          {m.toMySpace}
         </Link>
       </div>
     );
@@ -52,10 +55,10 @@ export function SaveWishPanel({ values, signedIn }: { values: WishValues; signed
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-line bg-white/80 p-6 shadow-soft">
       <div className="max-w-xl">
-        <p className="font-display text-xl font-semibold text-leaf-900">רוצים לשמור את המשאלה?</p>
+        <p className="font-display text-xl font-semibold text-leaf-900">{m.saveTitle}</p>
         <p className="mt-1 text-sm leading-relaxed text-ink-2">
-          היא תחכה לכם ב״המרחב שלי״, פרטית, ואפשר יהיה לראות שם אילו מיזמים חדשים מתאימים לה.
-          {!signedIn && " כדי לשמור נבקש מכם להיכנס — ובחזרה נשמור אותה בשבילכם."}
+          {m.saveBody}
+          {!signedIn && m.saveSignIn}
         </p>
         {error && (
           <p role="alert" className="mt-2 text-sm font-medium text-need-700">
@@ -65,7 +68,7 @@ export function SaveWishPanel({ values, signedIn }: { values: WishValues; signed
       </div>
       <Button size="lg" onClick={save} disabled={pending} className={cn(pending && "opacity-80")}>
         {pending ? <Loader2 className="animate-spin" /> : <BookmarkPlus />}
-        שמירת המשאלה
+        {m.saveCta}
       </Button>
     </div>
   );

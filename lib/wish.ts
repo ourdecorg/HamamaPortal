@@ -25,16 +25,18 @@ export const initialWishState: WishState = {
   values: { wish: "", outcome: "", domain: "", scope: "", offer: "" },
 };
 
-/** Validation shared by "find connections" and "save this wish". */
-export const wishSchema = z.object({
-  wish: z.string().trim().min(6, "ספרו לנו קצת יותר — משפט אחד לפחות.").max(1200),
-  outcome: z.string().trim().max(800).default(""),
-  domain: z.string().trim().default(""),
-  scope: z.union([geographyScopeSchema, z.literal("")]).default(""),
-  offer: z.string().trim().max(800).default(""),
-});
+/** Validation shared by "find connections" and "save this wish". The message is passed in, in the visitor's language. */
+export function makeWishSchema(tooShortMessage: string) {
+  return z.object({
+    wish: z.string().trim().min(6, tooShortMessage).max(1200),
+    outcome: z.string().trim().max(800).default(""),
+    domain: z.string().trim().default(""),
+    scope: z.union([geographyScopeSchema, z.literal("")]).default(""),
+    offer: z.string().trim().max(800).default(""),
+  });
+}
 
-export type ValidWish = z.infer<typeof wishSchema>;
+export type ValidWish = z.infer<ReturnType<typeof makeWishSchema>>;
 
 /** The optional hints handed to discovery — the same ones for the first analysis and every later re-run. */
 export function discoveryContext(v: Pick<ValidWish, "outcome" | "offer" | "domain" | "scope">): DiscoveryContext {
@@ -85,16 +87,10 @@ export type SaveWishResult =
   | { status: "auth_required" }
   | { status: "error"; error: string };
 
-export const WISH_STATUS = {
-  open: "פתוחה",
-  exploring: "בבדיקה",
-  connected: "יש חיבור",
-  in_progress: "בתהליך",
-  fulfilled: "התגשמה",
-  archived: "בארכיון",
-} as const;
+/** Labels for these live in the message dictionaries (wish.status). */
+export const WISH_STATUSES = ["open", "exploring", "connected", "in_progress", "fulfilled", "archived"] as const;
 
-export type WishStatus = keyof typeof WISH_STATUS;
+export type WishStatus = (typeof WISH_STATUSES)[number];
 
 export interface WishRow {
   id: string;

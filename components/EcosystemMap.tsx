@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { layoutNetwork } from "@/lib/layout";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 import { t } from "@/lib/locale";
 import type { Connection } from "@/lib/matching";
 import type { Project } from "@/types/project";
@@ -12,7 +13,9 @@ const H = 470;
  * thread that shifts from amber (the need) to teal (the offer). Built from the
  * real data, so the picture *is* the ecosystem. Nodes link to project pages.
  */
-export function EcosystemMap({ projects, connections }: { projects: Project[]; connections: Connection[] }) {
+export async function EcosystemMap({ projects, connections }: { projects: Project[]; connections: Connection[] }) {
+  const locale = await getLocale();
+  const m = (await getMessages()).home.map;
   const edges = connections.map((c) => [c.project_a.id, c.project_b.id] as [string, string]);
   const points = layoutNetwork(
     projects.map((p) => p.id),
@@ -31,7 +34,7 @@ export function EcosystemMap({ projects, connections }: { projects: Project[]; c
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label="מפת המרחב: מיזמים כנקודות, וחיבורים אפשריים בין צורך של מיזם אחד להצעה של מיזם אחר"
+        aria-label={m.aria}
         className="h-auto w-full overflow-visible"
       >
         <defs>
@@ -98,9 +101,9 @@ export function EcosystemMap({ projects, connections }: { projects: Project[]; c
                   className="fill-ink-2 text-[13px] font-medium transition-colors group-hover/node:fill-leaf-800 group-focus-visible/node:fill-leaf-800 max-sm:hidden"
                   style={{ paintOrder: "stroke", stroke: "var(--color-paper)", strokeWidth: 4, strokeLinejoin: "round" }}
                 >
-                  {t(p.name)}
+                  {t(p.name, locale)}
                 </text>
-                <title>{t(p.name)}</title>
+                <title>{t(p.name, locale)}</title>
               </g>
             </Link>
           );
@@ -109,13 +112,13 @@ export function EcosystemMap({ projects, connections }: { projects: Project[]; c
 
       <figcaption className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-ink-2">
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-need-500" /> צורך פתוח
+          <span className="size-2.5 rounded-full bg-need-500" /> {m.openNeed}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-offer-500" /> הצעה
+          <span className="size-2.5 rounded-full bg-offer-500" /> {m.offer}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-0.5 w-5 rounded-full bg-gradient-to-l from-offer-500 to-need-500" /> חיבור אפשרי
+          <span className="h-0.5 w-5 rounded-full from-offer-500 to-need-500 ltr:bg-gradient-to-r rtl:bg-gradient-to-l" /> {m.connection}
         </span>
       </figcaption>
     </figure>

@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import { getLocale } from "@/lib/i18n/server";
 import { loginUrl } from "@/lib/next-path";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -21,14 +22,15 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
 
 export { loginUrl, safeNext } from "@/lib/next-path";
 
-export function displayNameOf(user: User): string {
+/** The name to greet someone by. `fallback` (in the page language) is used when the account has no name or email. */
+export function displayNameOf(user: User, fallback: string): string {
   const meta = user.user_metadata as { full_name?: string; name?: string } | undefined;
-  return meta?.full_name || meta?.name || user.email?.split("@")[0] || "חבר/ה";
+  return meta?.full_name || meta?.name || user.email?.split("@")[0] || fallback;
 }
 
 /** For pages that need a signed-in user: sends visitors to /login and brings them back afterwards. */
 export async function requireUser(next: string): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect(loginUrl(next));
+  if (!user) redirect(loginUrl(next, await getLocale()));
   return user;
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { saveWish } from "@/app/wishes/actions";
+import { saveWish } from "@/app/[lang]/wishes/actions";
+import { useLocale, useLocalePath, useMessages } from "@/components/LocaleProvider";
 import { buttonVariants } from "@/components/ui/button";
 import { forgetWishDraft, takeWishDraft } from "@/lib/wish";
 
@@ -14,6 +15,9 @@ import { forgetWishDraft, takeWishDraft } from "@/lib/wish";
  */
 export function ResumeWish() {
   const router = useRouter();
+  const locale = useLocale();
+  const lp = useLocalePath();
+  const m = useMessages().wish;
   const started = useRef(false);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -23,27 +27,27 @@ export function ResumeWish() {
 
     const draft = takeWishDraft();
     if (!draft) {
-      router.replace("/wishes");
+      router.replace(lp("/wishes"));
       return;
     }
-    saveWish(draft).then((res) => {
+    saveWish(draft, locale).then((res) => {
       if (res.status === "saved") {
         forgetWishDraft();
-        router.replace("/my-space?saved=wish");
+        router.replace(lp("/my-space?saved=wish"));
       } else if (res.status === "auth_required") {
-        setProblem("ההתחברות לא הושלמה, ולכן המשאלה עוד לא נשמרה.");
+        setProblem(m.resumeIncomplete);
       } else {
         setProblem(res.error);
       }
     });
-  }, [router]);
+  }, [router, locale, lp, m.resumeIncomplete]);
 
   if (problem) {
     return (
       <div role="alert" className="mb-10 rounded-2xl bg-need-50 px-5 py-4 text-need-700">
         <p className="font-medium">{problem}</p>
         <Link href="/wishes" className={buttonVariants({ variant: "secondary", size: "sm" }) + " mt-3"}>
-          כתבו שוב את המשאלה
+          {m.writeAgain}
         </Link>
       </div>
     );
@@ -51,7 +55,7 @@ export function ResumeWish() {
   return (
     <p role="status" className="mb-10 flex items-center justify-center gap-3 rounded-2xl bg-leaf-50 px-5 py-4 font-medium text-leaf-900">
       <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-      שומרים את המשאלה שלכם…
+      {m.resuming}
     </p>
   );
 }

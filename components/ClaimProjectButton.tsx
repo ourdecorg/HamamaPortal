@@ -3,7 +3,8 @@
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { HeartHandshake, Loader2 } from "lucide-react";
-import { claimProject } from "@/app/projects/actions";
+import { claimProject } from "@/app/[lang]/projects/actions";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/button";
 import { loginUrl } from "@/lib/next-path";
 import type { ClaimState } from "@/lib/stewardship";
@@ -14,25 +15,26 @@ import type { ClaimState } from "@/lib/stewardship";
  */
 export function ClaimProjectButton({ slug, signedIn }: { slug: string; signedIn: boolean }) {
   const router = useRouter();
-  const [state, action, pending] = useActionState(() => claimProject(slug), { status: "idle" } as ClaimState);
-
+  const locale = useLocale();
+  const m = useMessages().stewardship;
+  const [state, action, pending] = useActionState(() => claimProject(slug, locale), { status: "idle" } as ClaimState);
   useEffect(() => {
-    if (state.status === "auth_required") router.push(loginUrl(`/projects/${slug}#stewardship`));
-  }, [state, router, slug]);
+    if (state.status === "auth_required") router.push(loginUrl(`/projects/${slug}#stewardship`, locale));
+  }, [state, router, slug, locale]);
 
   if (state.status === "requested") {
     return (
       <p role="status" className="rounded-2xl bg-leaf-50 p-4 text-sm leading-relaxed text-leaf-900">
-        הבקשה נשלחה. אחרי שנאשר אותה תוכלו לערוך את המיזם.
+        {m.requested}
       </p>
     );
   }
 
   return (
-    <form action={signedIn ? action : () => router.push(loginUrl(`/projects/${slug}#stewardship`))}>
+    <form action={signedIn ? action : () => router.push(loginUrl(`/projects/${slug}#stewardship`, locale))}>
       <Button type="submit" variant="secondary" disabled={pending}>
         {pending ? <Loader2 className="animate-spin" /> : <HeartHandshake />}
-        אני מטפח/ת את המיזם הזה
+        {m.claim}
       </Button>
       {state.status === "error" && (
         <p role="alert" className="mt-2 text-sm font-medium text-need-700">

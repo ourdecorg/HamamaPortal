@@ -19,11 +19,6 @@ export interface MyStewardship {
   status: StewardStatus;
 }
 
-export const STEWARD_STATUS_LABEL: Record<StewardStatus, string> = {
-  pending: "ממתין לאישור",
-  approved: "מאושר/ת",
-};
-
 const PROJECT_SELECT = "*, needs(*), offers(*)";
 
 /** My stewardship of one project, or null if I have not asked. */

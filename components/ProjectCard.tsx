@@ -1,11 +1,15 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+"use client";
+
+import { Link } from "@/components/LocaleLink";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
+import { NextArrow } from "@/components/Arrows";
 import { DomainTag } from "@/components/DomainTag";
 import { NeedBadge } from "@/components/NeedBadge";
 import { OfferBadge } from "@/components/OfferBadge";
 import { StageBadge } from "@/components/StageBadge";
 import { t } from "@/lib/locale";
-import { SEARCH_FIELD_LABELS, type SearchField } from "@/lib/search";
+import { fmt } from "@/lib/i18n/format";
+import type { SearchField } from "@/lib/search";
 import { ACTIVITY_STATUS } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/project";
@@ -23,20 +27,24 @@ interface ProjectCardProps {
 }
 
 export function DemoTag({ className }: { className?: string }) {
+  const m = useMessages().common;
   return (
     <span
-      title="תוכן לדוגמה — מיזם בדיוני שנכתב לצורך הדמו"
+      title={m.demoTagTitle}
       className={cn(
         "inline-flex items-center rounded-full border border-line-2 bg-paper-2 px-2 py-0.5 text-[0.65rem] font-medium tracking-wide text-ink-3",
         className,
       )}
     >
-      דוגמה
+      {m.demoTag}
     </span>
   );
 }
 
 export function ProjectCard({ project, variant = "explore", matchedFields = [], className }: ProjectCardProps) {
+  const locale = useLocale();
+  const messages = useMessages();
+  const m = messages.project;
   const openNeeds = project.current_needs.filter((n) => n.status === "open");
   const need = openNeeds[0];
   const offer = project.offers[0];
@@ -50,27 +58,28 @@ export function ProjectCard({ project, variant = "explore", matchedFields = [], 
       <Link href={`/projects/${project.slug}`} className={cn(base, "gap-5", className)}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-2xl font-semibold leading-tight text-leaf-900">{t(project.name)}</h3>
+            <h3 className="font-display text-2xl font-semibold leading-tight text-leaf-900">{t(project.name, locale)}</h3>
             <StageBadge stage={project.status.lifecycle_stage} className="mt-2" />
           </div>
           {project.portal.is_demo && <DemoTag />}
         </div>
 
         <div>
-          <p className="mb-1.5 text-xs font-semibold tracking-wide text-ink-3">מה הם מנסים לשנות</p>
-          <p className="font-display text-[1.15rem] leading-snug text-ink">{t(project.desired_change)}</p>
+          <p className="mb-1.5 text-xs font-semibold tracking-wide text-ink-3">{m.seekingChange}</p>
+          <p className="font-display text-[1.15rem] leading-snug text-ink">{t(project.desired_change, locale)}</p>
         </div>
 
         <div className="mt-auto space-y-2.5">
-          <p className="text-xs font-semibold tracking-wide text-ink-3">מה הם צריכים עכשיו</p>
+          <p className="text-xs font-semibold tracking-wide text-ink-3">{m.needsNow}</p>
           {openNeeds.slice(0, 2).map((n) => (
             <NeedBadge key={n.id} need={n} />
           ))}
         </div>
 
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-leaf-700">
-          להכיר את המיזם
-          <ArrowLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-1" />
+          {m.getToKnow}
+
+          <NextArrow className="size-4 transition-transform duration-300 rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1" />
         </span>
       </Link>
     );
@@ -83,7 +92,7 @@ export function ProjectCard({ project, variant = "explore", matchedFields = [], 
         <div className="flex items-center gap-2">
           {activity !== "active" && (
             <span className="rounded-full bg-sun/25 px-2 py-0.5 text-[0.65rem] font-medium text-need-700">
-              {ACTIVITY_STATUS[activity].he}
+              {ACTIVITY_STATUS[activity][locale]}
             </span>
           )}
           {project.portal.is_demo && <DemoTag />}
@@ -91,8 +100,8 @@ export function ProjectCard({ project, variant = "explore", matchedFields = [], 
       </div>
 
       <div>
-        <h3 className="font-display text-[1.6rem] font-semibold leading-tight text-leaf-900">{t(project.name)}</h3>
-        <p className="mt-1.5 leading-snug text-ink-2">{t(project.tagline)}</p>
+        <h3 className="font-display text-[1.6rem] font-semibold leading-tight text-leaf-900">{t(project.name, locale)}</h3>
+        <p className="mt-1.5 leading-snug text-ink-2">{t(project.tagline, locale)}</p>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -110,7 +119,9 @@ export function ProjectCard({ project, variant = "explore", matchedFields = [], 
 
       {matchedFields.length > 0 && (
         <p className="text-xs text-link-700">
-          נמצא {matchedFields.slice(0, 3).map((f) => SEARCH_FIELD_LABELS[f]).join(", ")}
+          {fmt(messages.search.foundIn, {
+            fields: matchedFields.slice(0, 3).map((f) => messages.search.fields[f]).join(", "),
+          })}
         </p>
       )}
     </Link>

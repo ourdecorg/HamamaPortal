@@ -1,39 +1,26 @@
-import Link from "next/link";
-import {
-  ArrowLeft,
-  CircleDashed,
-  Compass,
-  Gift,
-  Hash,
-  MapPin,
-  Sparkles,
-  Tag,
-  Type,
-  type LucideIcon,
-} from "lucide-react";
+"use client";
+
+import { Link } from "@/components/LocaleLink";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
+import { CircleDashed, Compass, Gift, Hash, MapPin, Sparkles, Tag, Type, type LucideIcon } from "lucide-react";
+import { NextArrow } from "@/components/Arrows";
 import { DomainTag } from "@/components/DomainTag";
 import { DemoTag } from "@/components/ProjectCard";
 import { StageBadge } from "@/components/StageBadge";
 import { buttonVariants } from "@/components/ui/button";
 import type { DiscoveryReasonKind, DiscoveryResult } from "@/lib/discovery";
+import { plural } from "@/lib/i18n/format";
 import { t } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
-const REASON_STYLE: Record<DiscoveryReasonKind, { icon: LucideIcon; tone: string; label: string }> = {
-  need: { icon: CircleDashed, tone: "bg-need-100 text-need-700", label: "Need" },
-  offer: { icon: Gift, tone: "bg-offer-100 text-offer-700", label: "Offer" },
-  words: { icon: Type, tone: "bg-paper-3 text-ink-2", label: "מילים" },
-  topic: { icon: Tag, tone: "bg-leaf-100 text-leaf-800", label: "נושא" },
-  domain: { icon: Hash, tone: "bg-leaf-100 text-leaf-800", label: "תחום" },
-  scope: { icon: MapPin, tone: "bg-paper-3 text-ink-2", label: "היקף" },
+const REASON_STYLE: Record<DiscoveryReasonKind, { icon: LucideIcon; tone: string }> = {
+  need: { icon: CircleDashed, tone: "bg-need-100 text-need-700" },
+  offer: { icon: Gift, tone: "bg-offer-100 text-offer-700" },
+  words: { icon: Type, tone: "bg-paper-3 text-ink-2" },
+  topic: { icon: Tag, tone: "bg-leaf-100 text-leaf-800" },
+  domain: { icon: Hash, tone: "bg-leaf-100 text-leaf-800" },
+  scope: { icon: MapPin, tone: "bg-paper-3 text-ink-2" },
 };
-
-const INTENT_LABEL = {
-  seeking: "מחפשים",
-  offering: "רוצים לתרום",
-  creating: "רוצים ליצור",
-  exploring: "סקרנים",
-} as const;
 
 /**
  * "What we understood → what we found → why → what you could do."
@@ -41,6 +28,8 @@ const INTENT_LABEL = {
  */
 export function DiscoveryResults({ result, className }: { result: DiscoveryResult; className?: string }) {
   const { interpretation: i, matches, reasons, suggested_actions } = result;
+  const locale = useLocale();
+  const m = useMessages().results;
 
   return (
     <div className={cn("space-y-12", className)}>
@@ -48,13 +37,13 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
       <section aria-labelledby="interpretation" className="rounded-[2rem] border border-leaf-200 bg-leaf-50/70 p-6 sm:p-8">
         <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-leaf-700">
           <Compass className="size-4" aria-hidden="true" />
-          <span id="interpretation">הבנו ש…</span>
-          <span className="rounded-full bg-leaf-100 px-2 py-0.5 text-xs font-medium">{INTENT_LABEL[i.intent]}</span>
+          <span id="interpretation">{m.understood}</span>
+          <span className="rounded-full bg-leaf-100 px-2 py-0.5 text-xs font-medium">{m.intents[i.intent]}</span>
         </p>
         <p className="font-display text-2xl font-medium leading-snug text-leaf-900 sm:text-[1.75rem]">{i.summary}</p>
 
         {i.topics.length > 0 && (
-          <ul className="mt-5 flex flex-wrap gap-2" aria-label="נושאים שזיהינו">
+          <ul className="mt-5 flex flex-wrap gap-2" aria-label={m.topicsAria}>
             {i.topics.map((topic) => (
               <li
                 key={topic.id}
@@ -67,7 +56,7 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
           </ul>
         )}
         <p className="mt-5 text-xs leading-relaxed text-ink-3">
-          זו קריאה פשוטה של המילים שכתבתם — לא בינה מלאכותית. אם פספסנו, נסחו שוב במילים אחרות.
+          {m.disclaimer}
         </p>
       </section>
 
@@ -76,9 +65,9 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
         {matches.length > 0 ? (
           <>
             <h2 id="found" className="mb-2 font-display text-3xl font-semibold text-leaf-900">
-              מצאנו {matches.length === 1 ? "מיזם אחד" : `${matches.length} מיזמים`} שעשויים להיות רלוונטיים
+              {plural(m.found, matches.length)}
             </h2>
-            <p className="mb-8 text-ink-2">לכל אחד מהם יש הסבר — למה הוא הופיע כאן.</p>
+            <p className="mb-8 text-ink-2">{m.foundHint}</p>
 
             <ol className="space-y-6">
               {matches.map(({ project }, idx) => (
@@ -94,10 +83,10 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
                       </div>
                       <h3 className="font-display text-3xl font-semibold leading-tight text-leaf-900">
                         <Link href={`/projects/${project.slug}`} className="underline-offset-4 hover:underline">
-                          {t(project.name)}
+                          {t(project.name, locale)}
                         </Link>
                       </h3>
-                      <p className="mt-2 leading-snug text-ink-2">{t(project.tagline)}</p>
+                      <p className="mt-2 leading-snug text-ink-2">{t(project.tagline, locale)}</p>
                       <div className="mt-4 flex flex-wrap gap-1.5">
                         {project.domains.map((d) => (
                           <DomainTag key={d} domain={d} />
@@ -107,12 +96,12 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
                         href={`/projects/${project.slug}`}
                         className={cn(buttonVariants({ variant: "soft", size: "sm" }), "mt-6 w-fit")}
                       >
-                        להכיר את המיזם <ArrowLeft />
+                        {m.getToKnow} <NextArrow />
                       </Link>
                     </div>
 
                     <div className="rounded-2xl bg-paper-2/70 p-5">
-                      <h4 className="mb-3 font-sans text-sm font-semibold text-ink">למה הוא הופיע כאן?</h4>
+                      <h4 className="mb-3 font-sans text-sm font-semibold text-ink">{m.whyShown}</h4>
                       <ul className="space-y-3">
                         {(reasons[project.id] ?? []).map((r) => {
                           const style = REASON_STYLE[r.kind];
@@ -125,7 +114,7 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
                                 )}
                               >
                                 <style.icon className="size-3" aria-hidden="true" />
-                                {style.label}
+                                {m.reasonKinds[r.kind]}
                               </span>
                               <span>{r.text}</span>
                             </li>
@@ -141,11 +130,9 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
         ) : (
           <div className="rounded-[2rem] border border-dashed border-line-2 bg-white/50 px-6 py-14 text-center">
             <h2 id="found" className="font-display text-2xl font-semibold text-leaf-900">
-              לא מצאנו כרגע מיזם שמתאים בבירור
+              {m.noneTitle}
             </h2>
-            <p className="mx-auto mt-3 max-w-lg text-ink-2">
-              זה לא אומר שהמשאלה לא חשובה — אולי היא בדיוק ההזדמנות. אפשר לנסח אחרת, לחפש לפי תחום, או להתחיל משהו בעצמכם.
-            </p>
+            <p className="mx-auto mt-3 max-w-lg text-ink-2">{m.noneBody}</p>
           </div>
         )}
       </section>
@@ -154,9 +141,9 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
       {suggested_actions.length > 0 && (
         <section aria-labelledby="actions">
           <h2 id="actions" className="mb-2 font-display text-2xl font-semibold text-leaf-900">
-            ומה אפשר לעשות עכשיו?
+            {m.actionsTitle}
           </h2>
-          <p className="mb-6 text-sm text-ink-3">הצעות בלבד. אתם מחליטים.</p>
+          <p className="mb-6 text-sm text-ink-3">{m.actionsHint}</p>
           <ul className="grid gap-4 sm:grid-cols-2">
             {suggested_actions.map((a) => (
               <li key={a.href + a.label}>
@@ -168,7 +155,7 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
                     <span className="block font-semibold text-leaf-900">{a.label}</span>
                     {a.hint && <span className="mt-1 block text-sm text-ink-2">{a.hint}</span>}
                   </span>
-                  <ArrowLeft className="mt-1 size-4 shrink-0 text-ink-3 transition-transform group-hover:-translate-x-1 group-hover:text-leaf-700" />
+                  <NextArrow className="mt-1 size-4 shrink-0 text-ink-3 transition-transform rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 group-hover:text-leaf-700" />
                 </Link>
               </li>
             ))}

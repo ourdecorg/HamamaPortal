@@ -1,23 +1,28 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import { Menu, Plus, X } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useMessages } from "@/components/LocaleProvider";
 import { Wordmark } from "@/components/Logo";
 import { buttonVariants } from "@/components/ui/button";
+import { splitLocale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/projects", label: "מיזמים" },
-  { href: "/discover", label: "גילוי" },
-  { href: "/wishes", label: "באר המשאלות" },
-  { href: "/connections", label: "חיבורים" },
-];
+  { href: "/projects", key: "projects" },
+  { href: "/discover", key: "discover" },
+  { href: "/wishes", key: "wishes" },
+  { href: "/connections", key: "connections" },
+] as const;
 
 /** `account` is a server-rendered slot (login link / user menu) supplied by the layout. */
 export function SiteHeader({ account }: { account?: ReactNode }) {
-  const pathname = usePathname();
+  const m = useMessages();
+  // The URL starts with the language ("/en/projects"); the menu only cares about the page part.
+  const pathname = splitLocale(usePathname()).path;
   // The menu is "open for a path": navigating elsewhere closes it without an effect.
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
@@ -28,11 +33,11 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-paper/80 backdrop-blur-xl">
       <div className="page-wrap flex h-[4.25rem] items-center justify-between gap-4">
-        <Link href="/" aria-label="החממה — לעמוד הבית" className="shrink-0">
+        <Link href="/" aria-label={m.common.homeAria} className="shrink-0">
           <Wordmark />
         </Link>
 
-        <nav aria-label="ניווט ראשי" className="hidden items-center gap-1 md:flex">
+        <nav aria-label={m.nav.main} className="hidden items-center gap-1 md:flex">
           {NAV.map((item) => (
             <Link
               key={item.href}
@@ -43,26 +48,29 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
                 isActive(item.href) && "bg-leaf-50 text-leaf-800 hover:bg-leaf-50",
               )}
             >
-              {item.label}
+              {m.nav[item.key]}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-2">
+          <Suspense fallback={null}>
+            <LanguageSwitcher />
+          </Suspense>
           {account}
           <Link href="/projects/new" className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}>
-            <Plus /> הוספת מיזם
+            <Plus /> {m.nav.addProject}
           </Link>
           <Link
             href="/projects/new"
-            aria-label="הוספת מיזם"
+            aria-label={m.nav.addProject}
             className={cn(buttonVariants({ size: "sm" }), "sm:hidden !px-3")}
           >
             <Plus />
           </Link>
           <button
             type="button"
-            aria-label={open ? "סגירת תפריט" : "פתיחת תפריט"}
+            aria-label={open ? m.nav.closeMenu : m.nav.openMenu}
             aria-expanded={open}
             onClick={() => setOpenPath(open ? null : pathname)}
             className="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-paper-2 md:hidden"
@@ -73,7 +81,7 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
       </div>
 
       {open && (
-        <nav aria-label="ניווט ראשי" className="border-t border-line/70 bg-paper/95 md:hidden">
+        <nav aria-label={m.nav.main} className="border-t border-line/70 bg-paper/95 md:hidden">
           <div className="page-wrap flex flex-col gap-1 py-3">
             {NAV.map((item) => (
               <Link
@@ -84,7 +92,7 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
                   isActive(item.href) && "bg-leaf-50 text-leaf-800",
                 )}
               >
-                {item.label}
+                {m.nav[item.key]}
               </Link>
             ))}
           </div>

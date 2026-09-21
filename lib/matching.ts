@@ -1,4 +1,8 @@
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
+import { fmt } from "@/lib/i18n/format";
+import { getMessagesFor } from "@/lib/i18n/messages";
 import { allVariants, shortLabel, t, withPrefix } from "@/lib/locale";
+import { signalLevel } from "@/lib/signal";
 import {
   NEXT_STEPS,
   NEXT_STEPS_BY_NEED_TYPE,
@@ -42,7 +46,7 @@ export type ReasonKind =
 export interface Reason {
   kind: ReasonKind;
   text: string;
-  /** Shared keyword tags, shown as chips (kept out of the Hebrew sentence). */
+  /** Shared keyword tags, shown as chips (kept out of the sentence). */
   tags?: string[];
 }
 
@@ -88,12 +92,12 @@ export interface Connection {
 
 // ------------------------------------------------------------------ utils ---
 
-export function toRef(p: Project): ProjectRef {
+export function toRef(p: Project, locale: Locale = DEFAULT_LOCALE): ProjectRef {
   return {
     id: p.id,
     slug: p.slug,
-    name: t(p.name),
-    tagline: t(p.tagline),
+    name: t(p.name, locale),
+    tagline: t(p.tagline, locale),
     domains: p.domains,
     stewards: p.people.stewards.map((s) => s.name),
     is_demo: p.portal.is_demo,
@@ -219,36 +223,49 @@ function bestPair(a: Project, b: Project): PairScore | null {
 
 // ------------------------------------------------------------- explanation --
 
-function buildUnknowns(a: Project, b: Project, pair: PairScore): string[] {
+function buildUnknowns(a: Project, b: Project, pair: PairScore, locale: Locale): string[] {
+  const m = getMessagesFor(locale).matching;
   const unknowns: string[] = [];
 
   const ga = a.geography;
   const gb = b.geography;
   if (!ga || !gb) {
-    unknowns.push("התאמה גיאוגרפית");
+    unknowns.push(m.unknowns.geo);
   } else if (ga.scope !== gb.scope) {
-    unknowns.push("התאמה גיאוגרפית — היקפי הפעילות שונים");
-  } else if (ga.scope === "local" && t(ga.place) !== t(gb.place)) {
-    unknowns.push(`המרחק בין ${t(ga.place) || "המקום של " + t(a.name)} ${withPrefix("ל", t(gb.place) || "המקום של " + t(b.name))}`);
+    unknowns.push(m.unknowns.geoScope);
+  } else if (ga.scope === "local" && t(ga.place, locale) !== t(gb.place, locale)) {
+    const from = t(ga.place, locale) || fmt(m.placeOf, { name: t(a.name, locale) });
+    const to = t(gb.place, locale) || fmt(m.placeOf, { name: t(b.name, locale) });
+    unknowns.push(fmt(m.unknowns.distance, { from, to, to_lamed: withPrefix("ל", to) }));
   }
 
-  unknowns.push("זמינות ולוחות זמנים");
+  unknowns.push(m.unknowns.availability);
 
-  if (pair.compat === "related") {
-    unknowns.push("האם ההצעה באמת עונה על הצורך — הסוגים קרובים, לא זהים");
-  } else {
-    unknowns.push("היקף — כמה מהצורך ההצעה מכסה בפועל");
-  }
+  unknowns.push(pair.compat === "related" ? m.unknowns.relatedTypes : m.unknowns.scope);
 
   const stageGap = Math.abs(
     LIFECYCLE_STAGES[a.status.lifecycle_stage].order - LIFECYCLE_STAGES[b.status.lifecycle_stage].order,
   );
-  if (stageGap >= 3) unknowns.push("התאמת שלב — המיזמים נמצאים בשלבים שונים מאוד");
+  if (stageGap >= 3) unknowns.push(m.unknowns.stageGap);
 
   if (overlap(a.collaboration_preferences.types, b.collaboration_preferences.types).length === 0) {
-    unknowns.push("סגנון שיתוף פעולה מועדף");
+    unknowns.push(m.unknowns.collabStyle);
   }
   return unknowns.slice(0, 4);
+}
+
+/** The names of the two projects in every shape a sentence template may want (Hebrew glues prefix letters to names). */
+function nameVars(a: Project, b: Project, locale: Locale) {
+  const an = t(a.name, locale);
+  const bn = t(b.name, locale);
+  return {
+    a: an,
+    b: bn,
+    a_vav: withPrefix("ו", an),
+    b_vav: withPrefix("ו", bn),
+    a_lamed: withPrefix("ל", an),
+    b_lamed: withPrefix("ל", bn),
+  };
 }
 
 function buildReasons(
@@ -256,27 +273,24 @@ function buildReasons(
   b: Project,
   pair: PairScore,
   reciprocal: boolean,
+  locale: Locale,
 ): Reason[] {
+  const m = getMessagesFor(locale).matching.reasons;
+  const names = nameVars(a, b, locale);
   const reasons: Reason[] = [];
-  const needType = exchangeType(pair.need.type).he;
-  const offerType = exchangeType(pair.offer.type).he;
+  const needType = exchangeType(pair.need.type)[locale];
+  const offerType = exchangeType(pair.offer.type)[locale];
 
   if (pair.compat === "exact") {
-    reasons.push({
-      kind: "need_offer",
-      text: `${t(a.name)} מחפש ${needType}, ${withPrefix("ו", t(b.name))} מציע ${offerType} — התאמה ישירה בין הצורך להצעה.`,
-    });
+    reasons.push({ kind: "need_offer", text: fmt(m.exact, { ...names, needType, offerType }) });
   } else if (pair.compat === "related") {
-    reasons.push({
-      kind: "need_offer",
-      text: `הצורך של ${t(a.name)} (${needType}) והצעה של ${t(b.name)} (${offerType}) הם סוגים קרובים — ייתכן שהם משלימים זה את זה.`,
-    });
+    reasons.push({ kind: "need_offer", text: fmt(m.related, { ...names, needType, offerType }) });
   }
 
   if (pair.keywords.length) {
     reasons.push({
       kind: "keywords",
-      text: "הצורך וההצעה מתארים נושאים משותפים:",
+      text: m.keywords,
       tags: pair.keywords.slice(0, 4),
     });
   }
@@ -285,7 +299,7 @@ function buildReasons(
   if (domains.length) {
     reasons.push({
       kind: "shared_domain",
-      text: `תחום משותף: ${domains.map((d) => domainLabel(d)).join(", ")}.`,
+      text: fmt(m.sharedDomain, { domains: domains.map((d) => domainLabel(d, locale)).join(", ") }),
     });
   }
 
@@ -293,35 +307,38 @@ function buildReasons(
   if (collab.length) {
     reasons.push({
       kind: "collaboration",
-      text: `שניהם פתוחים ל${collab.slice(0, 2).map(collabLabel).join(" ול")}.`,
+      text: fmt(m.collab, { list: collab.slice(0, 2).map((c) => collabLabel(c, locale)).join(m.collabJoin) }),
     });
   }
 
   if (reciprocal) {
-    reasons.push({
-      kind: "reciprocal",
-      text: `החיבור הדדי: גם ${withPrefix("ל", t(b.name))} יש צורך ש${t(a.name)} יכול לענות עליו.`,
-    });
+    reasons.push({ kind: "reciprocal", text: fmt(m.reciprocal, names) });
   }
   return reasons;
 }
 
-function buildSummary(a: Project, b: Project, need: Need, offer: Offer): string {
-  return `החיבור מוצע משום ש${t(a.name)} מחפש ${shortLabel(need)}, ${withPrefix("ו", t(b.name))} מציע ${shortLabel(offer)}.`;
+function buildSummary(a: Project, b: Project, need: Need, offer: Offer, locale: Locale): string {
+  return fmt(getMessagesFor(locale).matching.summary, {
+    ...nameVars(a, b, locale),
+    need: shortLabel(need, locale),
+    offer: shortLabel(offer, locale),
+  });
 }
 
-function buildNextSteps(need: Need, reciprocal: boolean): NextStep[] {
+function buildNextSteps(need: Need, reciprocal: boolean, locale: Locale): NextStep[] {
   const ids: NextStepId[] = ["intro_call", ...(NEXT_STEPS_BY_NEED_TYPE[need.type] ?? ["joint_experiment"])];
   if (reciprocal && !ids.includes("knowledge_swap")) ids.push("knowledge_swap");
-  return [...new Set(ids)].slice(0, 3).map((id) => ({ id, label: NEXT_STEPS[id].he, hint: NEXT_STEPS[id].hint }));
+  return [...new Set(ids)]
+    .slice(0, 3)
+    .map((id) => ({ id, label: NEXT_STEPS[id].label[locale], hint: NEXT_STEPS[id].hint[locale] }));
 }
 
-function describe(need: Need | Offer) {
+function describe(need: Need | Offer, locale: Locale) {
   return {
     id: need.id,
     type: need.type,
-    label: shortLabel(need),
-    description: t(need.description),
+    label: shortLabel(need, locale),
+    description: t(need.description, locale),
   };
 }
 
@@ -331,7 +348,7 @@ function describe(need: Need | Offer) {
  * Find possible connections across a set of projects.
  * At most one connection per pair of projects; strongest first.
  */
-export function findConnections(projects: Project[]): Connection[] {
+export function findConnections(projects: Project[], locale: Locale = DEFAULT_LOCALE): Connection[] {
   const byPair = new Map<string, Connection>();
 
   for (const a of projects) {
@@ -356,21 +373,21 @@ export function findConnections(projects: Project[]): Connection[] {
 
       byPair.set(pairKey, {
         id: `${a.slug}--${b.slug}`,
-        project_a: toRef(a),
-        project_b: toRef(b),
-        need: describe(forward.need),
-        offer: describe(forward.offer),
-        summary: buildSummary(a, b, forward.need, forward.offer),
-        reasons: buildReasons(a, b, forward, reciprocal),
-        unknowns: buildUnknowns(a, b, forward),
+        project_a: toRef(a, locale),
+        project_b: toRef(b, locale),
+        need: describe(forward.need, locale),
+        offer: describe(forward.offer, locale),
+        summary: buildSummary(a, b, forward.need, forward.offer, locale),
+        reasons: buildReasons(a, b, forward, reciprocal, locale),
+        unknowns: buildUnknowns(a, b, forward, locale),
         confidence,
         reciprocal: back
           ? {
-              need: { id: back.need.id, type: back.need.type, label: shortLabel(back.need) },
-              offer: { id: back.offer.id, type: back.offer.type, label: shortLabel(back.offer) },
+              need: { id: back.need.id, type: back.need.type, label: shortLabel(back.need, locale) },
+              offer: { id: back.offer.id, type: back.offer.type, label: shortLabel(back.offer, locale) },
             }
           : null,
-        next_steps: buildNextSteps(forward.need, reciprocal),
+        next_steps: buildNextSteps(forward.need, reciprocal, locale),
       });
     }
   }
@@ -404,10 +421,9 @@ export function pickDiverse(connections: Connection[], count: number): Connectio
 }
 
 /** A qualitative reading of the confidence hint — never show the raw number. */
-export function signalStrength(confidence: number): { level: 1 | 2 | 3; label: string } {
-  if (confidence >= 0.74) return { level: 3, label: "אות חזק" };
-  if (confidence >= 0.6) return { level: 2, label: "אות סביר" };
-  return { level: 1, label: "אות ראשוני" };
+export function signalStrength(confidence: number, locale: Locale = DEFAULT_LOCALE): { level: 1 | 2 | 3; label: string } {
+  const level = signalLevel(confidence);
+  return { level, label: getMessagesFor(locale).connectionCard.signal[level] };
 }
 
 export interface UnmetNeed {
@@ -419,7 +435,7 @@ export interface UnmetNeed {
  * Open needs that no offer in the ecosystem answers yet. These are not
  * failures — they are the most useful signal for who to invite next.
  */
-export function findUnmetNeeds(projects: Project[]): UnmetNeed[] {
+export function findUnmetNeeds(projects: Project[], locale: Locale = DEFAULT_LOCALE): UnmetNeed[] {
   const unmet: UnmetNeed[] = [];
   for (const a of projects) {
     const answered = new Set<string>();
@@ -428,7 +444,7 @@ export function findUnmetNeeds(projects: Project[]): UnmetNeed[] {
       for (const pair of qualifyingPairs(a, b)) answered.add(pair.need.id);
     }
     for (const need of a.current_needs) {
-      if (need.status === "open" && !answered.has(need.id)) unmet.push({ project: toRef(a), need: describe(need) });
+      if (need.status === "open" && !answered.has(need.id)) unmet.push({ project: toRef(a, locale), need: describe(need, locale) });
     }
   }
   return unmet;

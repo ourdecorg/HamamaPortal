@@ -1,3 +1,6 @@
+"use client";
+
+import { useMessages } from "@/components/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 /** The mark: a greenhouse arch with a seedling growing inside it. */
@@ -21,14 +24,15 @@ export function LogoMark({ className }: { className?: string }) {
 }
 
 export function Wordmark({ className, showSubtitle = true }: { className?: string; showSubtitle?: boolean }) {
+  const m = useMessages();
   return (
     <span className={cn("flex items-center gap-2.5", className)}>
       <LogoMark className="text-leaf-700" />
       <span className="flex flex-col leading-none">
-        <span className="font-display text-[1.65rem] font-bold tracking-tight text-leaf-900">החממה</span>
+        <span className="font-display text-[1.65rem] font-bold tracking-tight text-leaf-900">{m.common.brand}</span>
         {showSubtitle && (
           <span className="mt-1 hidden text-[0.68rem] font-medium tracking-wide text-ink-3 sm:block">
-            פורטל מיזמי עתיד
+            {m.common.brandSubtitle}
           </span>
         )}
       </span>

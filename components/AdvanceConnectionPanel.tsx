@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Check, Compass, Loader2, MessageCircle, Rocket, Send } from "lucide-react";
-import { advanceConnection, requestIntroduction } from "@/app/connections/actions";
+import { advanceConnection, requestIntroduction } from "@/app/[lang]/connections/actions";
 import { IntroDraft } from "@/components/IntroDraft";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/button";
 import type { Connection } from "@/lib/matching";
-import { OPPORTUNITY_STATUS, type MyOpportunity } from "@/lib/opportunity";
+import type { MyOpportunity } from "@/lib/opportunity";
 import { loginUrl } from "@/lib/next-path";
 
 interface Props {
@@ -25,6 +26,9 @@ interface Props {
  */
 export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Props) {
   const router = useRouter();
+  const locale = useLocale();
+  const messages = useMessages();
+  const m = messages.advance;
   const pathname = usePathname();
   const search = useSearchParams().toString();
   const [opp, setOpp] = useState<MyOpportunity | null>(initial);
@@ -34,14 +38,14 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
 
   function advance() {
     if (!signedIn) {
-      router.push(loginUrl(`${pathname}${search ? `?${search}` : ""}#${c.id}`));
+      router.push(loginUrl(`${pathname}${search ? `?${search}` : ""}#${c.id}`, locale));
       return;
     }
     setError(null);
     start(async () => {
-      const res = await advanceConnection(c.id);
+      const res = await advanceConnection(c.id, locale);
       if (res.status === "ok") setOpp(res.opportunity);
-      else if (res.status === "auth_required") router.push(loginUrl(`${pathname}${search ? `?${search}` : ""}#${c.id}`));
+      else if (res.status === "auth_required") router.push(loginUrl(`${pathname}${search ? `?${search}` : ""}#${c.id}`, locale));
       else setError(res.error);
     });
   }
@@ -50,7 +54,7 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
     if (!opp) return;
     setError(null);
     start(async () => {
-      const res = await requestIntroduction(opp.id);
+      const res = await requestIntroduction(opp.id, locale);
       if (res.status === "ok") {
         setOpp(res.opportunity);
         setDraftOpen(true);
@@ -65,13 +69,13 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
         <div className="flex flex-wrap items-center gap-3">
           <Button size="lg" onClick={advance} disabled={pending}>
             {pending ? <Loader2 className="animate-spin" /> : <Rocket />}
-            אני רוצה לקדם את החיבור הזה
+            {m.cta}
           </Button>
           <IntroDraft connection={c} />
         </div>
         <p className="text-sm leading-relaxed text-ink-3">
-          לא נשלחת שום הודעה, לאף אחד. זה רק מסמן שאתם רוצים לקדם את החיבור — והצעד הבא נשאר בידיים שלכם.
-          {!signedIn && " כדי לשמור אותו נבקש מכם להיכנס."}
+          {m.note}
+          {!signedIn && m.noteSignIn}
         </p>
         {error && (
           <p role="alert" className="text-sm font-medium text-need-700">
@@ -83,7 +87,7 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
   }
 
   // ── Advanced: confirmation + a simple human next step ─────────────────
-  const status = OPPORTUNITY_STATUS[opp.status];
+  const status = messages.opportunity.status[opp.status];
   const askedForIntro = opp.status === "intro_requested";
 
   return (
@@ -93,29 +97,30 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
           <Check className="size-4" aria-hidden="true" />
         </span>
         <p role="status" className="font-display text-xl font-semibold text-leaf-900">
-          החיבור נשמר ב״המרחב שלי״
+          {m.savedTitle}
+
         </p>
         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-leaf-800">{status.label}</span>
       </div>
       <p className="text-sm leading-relaxed text-ink-2">{status.hint}</p>
 
       <div>
-        <p className="mb-3 text-sm font-semibold text-ink">איזה צעד אנושי מתאים לכם עכשיו?</p>
+        <p className="mb-3 text-sm font-semibold text-ink">{m.stepsTitle}</p>
         <ul className="grid gap-3 sm:grid-cols-3">
           <li className="rounded-2xl border border-line bg-white/80 p-4">
             <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-leaf-900">
-              <Send className="size-4 text-leaf-600" aria-hidden="true" /> לבקש היכרות
+              <Send className="size-4 text-leaf-600" aria-hidden="true" /> {m.askIntro.title}
             </p>
-            <p className="mb-3 text-sm leading-snug text-ink-2">נכין טיוטת הודעה לשני הצדדים. אתם שולחים אותה — אנחנו לא.</p>
+            <p className="mb-3 text-sm leading-snug text-ink-2">{m.askIntro.body}</p>
             <Button size="sm" variant={askedForIntro ? "soft" : "secondary"} onClick={askedForIntro ? () => setDraftOpen(true) : askIntroduction} disabled={pending}>
-              {askedForIntro ? "לטיוטה" : "בקשת היכרות"}
+              {askedForIntro ? m.askIntro.draft : m.askIntro.cta}
             </Button>
           </li>
           <li className="rounded-2xl border border-line bg-white/80 p-4">
             <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-leaf-900">
-              <Compass className="size-4 text-leaf-600" aria-hidden="true" /> לחקור את החיבור
+              <Compass className="size-4 text-leaf-600" aria-hidden="true" /> {m.explore.title}
             </p>
-            <p className="mb-3 text-sm leading-snug text-ink-2">להכיר את שני המיזמים לפני שיוצרים קשר.</p>
+            <p className="mb-3 text-sm leading-snug text-ink-2">{m.explore.body}</p>
             <div className="flex flex-wrap gap-2 text-sm">
               <Link href={`/projects/${c.project_a.slug}`} className="font-medium text-link-700 underline-offset-4 hover:underline">
                 {c.project_a.name}
@@ -127,11 +132,11 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
           </li>
           <li className="rounded-2xl border border-line bg-white/80 p-4">
             <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-leaf-900">
-              <MessageCircle className="size-4 text-leaf-600" aria-hidden="true" /> להציע שיחה של 30 דקות
+              <MessageCircle className="size-4 text-leaf-600" aria-hidden="true" /> {m.call.title}
             </p>
-            <p className="mb-3 text-sm leading-snug text-ink-2">שיחה קצרה, רק כדי לבדוק אם יש כאן משהו. אפשר להתחיל מהטיוטה.</p>
+            <p className="mb-3 text-sm leading-snug text-ink-2">{m.call.body}</p>
             <Button size="sm" variant="secondary" onClick={() => setDraftOpen(true)}>
-              לטיוטת ההודעה
+              {m.call.cta}
             </Button>
           </li>
         </ul>
@@ -145,7 +150,11 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
         </p>
       )}
       <p className="text-xs text-ink-3">
-        כל החיבורים ששמרתם נמצאים ב<Link href="/my-space" className="underline underline-offset-4 hover:text-leaf-700">מרחב שלי</Link>.
+        {m.allSavedA}
+        <Link href="/my-space" className="underline underline-offset-4 hover:text-leaf-700">
+          {m.allSavedLink}
+        </Link>
+        {m.allSavedB}
       </p>
     </div>
   );

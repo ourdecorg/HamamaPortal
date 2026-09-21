@@ -1,10 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Search, Sprout, X } from "lucide-react";
+import { Search, Sprout, X } from "lucide-react";
+import { NextArrow } from "@/components/Arrows";
 import { ProjectCard } from "@/components/ProjectCard";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { plural, fmt } from "@/lib/i18n/format";
 import { filterProjects, type ProjectFilters } from "@/lib/search";
 import { LIFECYCLE_STAGES, STAGE_ORDER, domainInfo } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
@@ -19,10 +22,10 @@ export interface ExploreInitial {
   exchange: Exchange;
 }
 
-const EXCHANGE_OPTIONS: { value: Exchange; label: string; hint: string }[] = [
-  { value: "any", label: "הכול", hint: "" },
-  { value: "needs", label: "מחפשים משהו", hint: "יש להם Need פתוח" },
-  { value: "offers", label: "מציעים משהו", hint: "יש להם Offer" },
+const EXCHANGE_OPTIONS: { value: Exchange; label: "exchangeAll" | "exchangeNeeds" | "exchangeOffers" }[] = [
+  { value: "any", label: "exchangeAll" },
+  { value: "needs", label: "exchangeNeeds" },
+  { value: "offers", label: "exchangeOffers" },
 ];
 
 function Chip({
@@ -65,6 +68,8 @@ export function ExploreClient({
   domains: { key: string; label: string; count: number }[];
   initial: ExploreInitial;
 }) {
+  const locale = useLocale();
+  const m = useMessages().explore;
   const [query, setQuery] = useState(initial.q);
   const [selectedDomains, setSelectedDomains] = useState<string[]>(initial.domains);
   const [stage, setStage] = useState<LifecycleStage | null>(initial.stage);
@@ -108,8 +113,8 @@ export function ExploreClient({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="חפשו לפי שם, נושא, צורך או הצעה…"
-          aria-label="חיפוש מיזמים"
+          placeholder={m.searchPlaceholder}
+          aria-label={m.searchAria}
           className="h-14 w-full rounded-full border border-line-2 bg-white pe-5 text-lg text-ink shadow-soft placeholder:text-ink-3/80 focus:border-leaf-500 focus:outline-none focus:ring-4 focus:ring-leaf-200/60"
           style={{ paddingInlineStart: "3.25rem" }}
         />
@@ -118,7 +123,7 @@ export function ExploreClient({
       {/* filters */}
       <div className="mt-6 space-y-5">
         <fieldset>
-          <legend className="mb-2.5 text-xs font-semibold tracking-wide text-ink-3">תחום</legend>
+          <legend className="mb-2.5 text-xs font-semibold tracking-wide text-ink-3">{m.domain}</legend>
           <div className="flex flex-wrap gap-2">
             {domains.map((d) => (
               <Chip key={d.key} active={selectedDomains.includes(d.key)} onClick={() => toggleDomain(d.key)}>
@@ -136,21 +141,21 @@ export function ExploreClient({
 
         <div className="grid gap-5 md:grid-cols-2">
           <fieldset>
-            <legend className="mb-2.5 text-xs font-semibold tracking-wide text-ink-3">שלב</legend>
+            <legend className="mb-2.5 text-xs font-semibold tracking-wide text-ink-3">{m.stage}</legend>
             <div className="flex flex-wrap gap-2">
               <Chip active={stage === null} onClick={() => setStage(null)}>
-                כל השלבים
+                {m.allStages}
               </Chip>
               {STAGE_ORDER.map((s) => (
                 <Chip key={s} active={stage === s} onClick={() => setStage(stage === s ? null : s)}>
-                  {LIFECYCLE_STAGES[s].he}
+                  {LIFECYCLE_STAGES[s][locale]}
                 </Chip>
               ))}
             </div>
           </fieldset>
 
           <fieldset>
-            <legend className="mb-2.5 text-xs font-semibold tracking-wide text-ink-3">Need / Offer</legend>
+            <legend className="mb-2.5 text-xs font-semibold tracking-wide text-ink-3">{m.exchange}</legend>
             <div className="flex flex-wrap gap-2">
               {EXCHANGE_OPTIONS.map((o) => (
                 <Chip
@@ -159,7 +164,7 @@ export function ExploreClient({
                   tone={o.value === "needs" ? "need" : o.value === "offers" ? "offer" : "leaf"}
                   onClick={() => setExchange(o.value)}
                 >
-                  {o.label}
+                  {m[o.label]}
                 </Chip>
               ))}
             </div>
@@ -171,12 +176,12 @@ export function ExploreClient({
       <div className="mb-6 mt-9 flex items-center justify-between gap-4 border-t border-line-2 pt-6">
         <p aria-live="polite" className="text-sm font-medium text-ink-2">
           {hits.length === projects.length && !hasFilters
-            ? `${hits.length} מיזמים במרחב`
-            : `נמצאו ${hits.length} מתוך ${projects.length} מיזמים`}
+            ? plural(m.totalCount, hits.length)
+            : fmt(m.foundCount, { n: hits.length, total: projects.length })}
         </p>
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={reset}>
-            <X /> ניקוי הסינון
+            <X /> {m.clear}
           </Button>
         )}
       </div>
@@ -193,25 +198,23 @@ export function ExploreClient({
           <span className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-leaf-50 text-leaf-600">
             <Sprout className="size-7" aria-hidden="true" />
           </span>
-          <h2 className="font-display text-2xl font-semibold text-leaf-900">עדיין אין כאן מיזם כזה</h2>
-          <p className="mx-auto mt-2 max-w-md text-ink-2">
-            אולי המילים שונות מאלה שהמיזמים בחרו, ואולי זה פשוט לא קיים עדיין. אפשר לרחב את הסינון, לנסות גילוי בשפה חופשית — או לספר לנו מה חסר.
-          </p>
+          <h2 className="font-display text-2xl font-semibold text-leaf-900">{m.emptyTitle}</h2>
+          <p className="mx-auto mt-2 max-w-md text-ink-2">{m.emptyBody}</p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Button variant="secondary" onClick={reset}>
-              ניקוי הסינון
+              {m.clear}
             </Button>
             <Link
               href={query.trim() ? `/discover?q=${encodeURIComponent(query.trim())}` : "/discover"}
               className={buttonVariants({ variant: "soft" })}
             >
-              נסו גילוי בשפה חופשית <ArrowLeft />
+              {m.tryDiscover} <NextArrow />
             </Link>
             <Link
               href={query.trim() ? `/wishes?q=${encodeURIComponent(query.trim())}` : "/wishes"}
               className={buttonVariants({ variant: "soft" })}
             >
-              הביעו משאלה
+              {m.makeWish}
             </Link>
           </div>
         </div>
@@ -219,9 +222,10 @@ export function ExploreClient({
 
       {query.trim() && hits.length > 0 && (
         <p className="mt-8 text-sm text-ink-3">
-          החיפוש כאן מבוסס על מילים — הוא עדיין לא &quot;מבין&quot; משמעות.{" "}
+          {m.wordsNoteA}
           <Link href={`/discover?q=${encodeURIComponent(query.trim())}`} className="text-leaf-700 underline underline-offset-4">
-            נסו לנסח כמשפט בגילוי
+            {m.wordsNoteLink}
+
           </Link>
           .
         </p>

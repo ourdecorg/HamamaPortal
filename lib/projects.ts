@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 import { t } from "@/lib/locale";
 import { connectionsFor, findConnections, findUnmetNeeds, type Connection, type UnmetNeed } from "@/lib/matching";
 import { rowsToProject, type ProjectWithItems } from "@/lib/project-mapper";
@@ -108,36 +109,37 @@ export interface DomainSummary {
   count: number;
 }
 
-/** Domains in use, busiest first. */
-export async function getDomains(): Promise<DomainSummary[]> {
+/** Domains in use, busiest first; labels and tie-breaking follow `locale`. */
+export async function getDomains(locale: Locale = DEFAULT_LOCALE): Promise<DomainSummary[]> {
   const counts = new Map<string, number>();
   for (const p of await getProjects()) {
     for (const d of p.domains) counts.set(d, (counts.get(d) ?? 0) + 1);
   }
   return [...counts.entries()]
-    .map(([key, count]) => ({ key, label: domainLabel(key), count }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "he"));
+    .map(([key, count]) => ({ key, label: domainLabel(key, locale), count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, locale));
 }
 
 // ------------------------------------------------------------ connections ---
 
-const loadConnections = cache(async (): Promise<Connection[]> => findConnections(await getProjects()));
+/** Memoised per request AND per language: the explanations are written in `locale`. */
+const loadConnections = cache(async (locale: Locale): Promise<Connection[]> => findConnections(await getProjects(), locale));
 
 /** Every possible connection in the ecosystem, strongest signal first. */
-export async function getConnections(): Promise<Connection[]> {
-  return loadConnections();
+export async function getConnections(locale: Locale = DEFAULT_LOCALE): Promise<Connection[]> {
+  return loadConnections(locale);
 }
 
 /** Connections involving one project (as the one with the need or the one offering). */
-export async function getSuggestedConnections(slug: string): Promise<Connection[]> {
+export async function getSuggestedConnections(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Connection[]> {
   const project = await getProjectBySlug(slug);
   if (!project) return [];
-  return connectionsFor(await loadConnections(), project.id);
+  return connectionsFor(await loadConnections(locale), project.id);
 }
 
 /** Open needs that nothing in the ecosystem answers yet. */
-export async function getUnmetNeeds(): Promise<UnmetNeed[]> {
-  return findUnmetNeeds(await getProjects());
+export async function getUnmetNeeds(locale: Locale = DEFAULT_LOCALE): Promise<UnmetNeed[]> {
+  return findUnmetNeeds(await getProjects(), locale);
 }
 
 // ------------------------------------------------------------------ stats ---
@@ -155,7 +157,7 @@ export async function getEcosystemStats(): Promise<EcosystemStats> {
     active_projects: projects.filter((p) => p.status.activity_status === "active").length,
     open_needs: projects.reduce((n, p) => n + p.current_needs.filter((x) => x.status === "open").length, 0),
     offers: projects.reduce((n, p) => n + p.offers.length, 0),
-    possible_connections: (await loadConnections()).length,
+    possible_connections: (await loadConnections(DEFAULT_LOCALE)).length,
   };
 }
 

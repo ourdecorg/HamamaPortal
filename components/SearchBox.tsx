@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { NextArrow } from "@/components/Arrows";
+import { useLocalePath, useMessages } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/button";
-import { EXAMPLE_PROMPTS } from "@/lib/prompts";
 import { cn } from "@/lib/utils";
 
 interface SearchBoxProps {
@@ -11,6 +12,7 @@ interface SearchBoxProps {
   size?: "hero" | "compact";
   defaultValue?: string;
   action?: string;
+  /** Overrides the button text (defaults to the dictionary's). */
   cta?: string;
   showExamples?: boolean;
   className?: string;
@@ -24,10 +26,13 @@ export function SearchBox({
   size = "hero",
   defaultValue = "",
   action = "/discover",
-  cta = "גלה מה כבר קיים",
+  cta,
   showExamples = true,
   className,
 }: SearchBoxProps) {
+  const m = useMessages().search;
+  const lp = useLocalePath();
+  const prompts = m.prompts;
   const [value, setValue] = useState(defaultValue);
   const [exampleIndex, setExampleIndex] = useState(0);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -35,12 +40,12 @@ export function SearchBox({
 
   useEffect(() => {
     if (value) return;
-    const id = setInterval(() => setExampleIndex((i) => (i + 1) % EXAMPLE_PROMPTS.length), 3800);
+    const id = setInterval(() => setExampleIndex((i) => (i + 1) % prompts.length), 3800);
     return () => clearInterval(id);
-  }, [value]);
+  }, [value, prompts.length]);
 
   return (
-    <form action={action} method="get" className={cn("w-full", className)}>
+    <form action={lp(action)} method="get" className={cn("w-full", className)}>
       <div
         className={cn(
           "group relative rounded-[1.75rem] border border-line-2 bg-white shadow-lift transition-all focus-within:border-leaf-500 focus-within:ring-4 focus-within:ring-leaf-200/60",
@@ -48,7 +53,7 @@ export function SearchBox({
         )}
       >
         <label htmlFor="discover-q" className="sr-only">
-          מה היית רוצה שיקרה בעולם?
+          {m.label}
         </label>
         <div className="relative">
           <textarea
@@ -79,7 +84,7 @@ export function SearchBox({
                 hero ? "text-lg leading-relaxed sm:text-xl" : "text-base",
               )}
             >
-              {EXAMPLE_PROMPTS[exampleIndex]}
+              {prompts[exampleIndex]}
             </span>
           )}
         </div>
@@ -87,18 +92,18 @@ export function SearchBox({
         <div className="flex items-center justify-between gap-3 px-2 pb-1 pt-2">
           <span className="hidden items-center gap-1.5 ps-2 text-xs text-ink-3 sm:inline-flex">
             <Sparkles className="size-3.5 text-leaf-500" aria-hidden="true" />
-            כתבו במילים שלכם. אפשר לחפש, להציע, או סתם לחלום.
+            {m.hint}
           </span>
           <Button type="submit" size={hero ? "lg" : "md"} className="ms-auto">
-            {cta} <ArrowLeft />
+            {cta ?? m.cta} <NextArrow />
           </Button>
         </div>
       </div>
 
       {showExamples && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-ink-3">למשל:</span>
-          {EXAMPLE_PROMPTS.map((p) => (
+          <span className="text-xs text-ink-3">{m.forExample}</span>
+          {prompts.map((p) => (
             <button
               key={p}
               type="button"

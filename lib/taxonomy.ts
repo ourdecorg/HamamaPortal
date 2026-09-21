@@ -5,9 +5,16 @@ import type { ActivityStatus, GeographyScope, LifecycleStage } from "@/types/pro
  * server code, client code and the matching engine alike.
  */
 
+import type { Locale } from "@/lib/i18n/config";
+
 export interface Label {
   he: string;
   en: string;
+}
+
+/** The text of a bilingual label in the given locale. */
+export function pick(label: Label, locale: Locale): string {
+  return label[locale];
 }
 
 // ---------------------------------------------------------------- domains ---
@@ -16,25 +23,25 @@ export interface DomainInfo extends Label {
   /** A muted hue (0-360) used for the small dot on domain tags. */
   hue: number;
   /** One friendly line shown on the domain cloud. */
-  blurb: string;
+  blurb: Label;
 }
 
 export const DOMAINS: Record<string, DomainInfo> = {
-  communities: { he: "קהילות", en: "Communities", hue: 152, blurb: "לחיות ולעשות יחד" },
-  ai_humans: { he: "AI ואנשים", en: "AI & People", hue: 262, blurb: "טכנולוגיה שמשרתת שיקול דעת אנושי" },
-  new_economy: { he: "כלכלה חדשה", en: "New economy", hue: 38, blurb: "דרכים אחרות להחליף ערך" },
-  education: { he: "חינוך", en: "Education", hue: 205, blurb: "ללמוד תוך כדי עשייה" },
-  sustainability: { he: "קיימות", en: "Sustainability", hue: 128, blurb: "פחות בזבוז, יותר חיים" },
-  civic_innovation: { he: "ממשל ואזרחות", en: "Civic innovation", hue: 340, blurb: "להחליט יחד על מה שמשפיע עלינו" },
-  collaboration: { he: "שיתוף פעולה", en: "Collaboration", hue: 20, blurb: "לעבוד ביחד בלי לאבד את הקול" },
-  technology: { he: "טכנולוגיה", en: "Technology", hue: 225, blurb: "כלים פתוחים ופשוטים" },
-  future_of_work: { he: "עתיד העבודה", en: "Future of work", hue: 300, blurb: "איך נעבוד ומה נרוויח מזה" },
-  collective_intelligence: { he: "חכמה קולקטיבית", en: "Collective intelligence", hue: 180, blurb: "חושבים ומחליטים כקבוצה" },
-  local_resilience: { he: "חוסן מקומי", en: "Local resilience", hue: 10, blurb: "שכנים שיודעים לסמוך זה על זה" },
+  communities: { he: "קהילות", en: "Communities", hue: 152, blurb: { he: "לחיות ולעשות יחד", en: "Living and doing together" } },
+  ai_humans: { he: "AI ואנשים", en: "AI & People", hue: 262, blurb: { he: "טכנולוגיה שמשרתת שיקול דעת אנושי", en: "Technology that serves human judgement" } },
+  new_economy: { he: "כלכלה חדשה", en: "New economy", hue: 38, blurb: { he: "דרכים אחרות להחליף ערך", en: "Other ways to exchange value" } },
+  education: { he: "חינוך", en: "Education", hue: 205, blurb: { he: "ללמוד תוך כדי עשייה", en: "Learning by doing" } },
+  sustainability: { he: "קיימות", en: "Sustainability", hue: 128, blurb: { he: "פחות בזבוז, יותר חיים", en: "Less waste, more life" } },
+  civic_innovation: { he: "ממשל ואזרחות", en: "Civic innovation", hue: 340, blurb: { he: "להחליט יחד על מה שמשפיע עלינו", en: "Deciding together on what affects us" } },
+  collaboration: { he: "שיתוף פעולה", en: "Collaboration", hue: 20, blurb: { he: "לעבוד ביחד בלי לאבד את הקול", en: "Working together without losing your voice" } },
+  technology: { he: "טכנולוגיה", en: "Technology", hue: 225, blurb: { he: "כלים פתוחים ופשוטים", en: "Open, simple tools" } },
+  future_of_work: { he: "עתיד העבודה", en: "Future of work", hue: 300, blurb: { he: "איך נעבוד ומה נרוויח מזה", en: "How we will work, and what we gain from it" } },
+  collective_intelligence: { he: "חכמה קולקטיבית", en: "Collective intelligence", hue: 180, blurb: { he: "חושבים ומחליטים כקבוצה", en: "Thinking and deciding as a group" } },
+  local_resilience: { he: "חוסן מקומי", en: "Local resilience", hue: 10, blurb: { he: "שכנים שיודעים לסמוך זה על זה", en: "Neighbours who can rely on each other" } },
 };
 
 export function domainInfo(key: string): DomainInfo {
-  return DOMAINS[key] ?? { he: humanize(key), en: humanize(key), hue: 160, blurb: "" };
+  return DOMAINS[key] ?? { he: humanize(key), en: humanize(key), hue: 160, blurb: { he: "", en: "" } };
 }
 
 export function domainLabel(key: string, locale: "he" | "en" = "he"): string {
@@ -87,16 +94,16 @@ export function typeCompatibility(need: string, offer: string): "exact" | "relat
 
 export interface StageInfo extends Label {
   order: number;
-  hint: string;
+  hint: Label;
 }
 
 export const LIFECYCLE_STAGES: Record<LifecycleStage, StageInfo> = {
-  idea: { he: "רעיון", en: "Idea", order: 0, hint: "עוד לפני שהתחלנו לעשות" },
-  exploration: { he: "בחינה ראשונית", en: "Exploration", order: 1, hint: "בודקים שאלות ומדברים עם אנשים" },
-  prototype: { he: "אב־טיפוס", en: "Prototype", order: 2, hint: "יש משהו ראשון שאפשר לגעת בו" },
-  pilot: { he: "פיילוט", en: "Pilot", order: 3, hint: "מנסים בקטן, בעולם האמיתי" },
-  operating: { he: "בפעילות", en: "Operating", order: 4, hint: "עובד ומשרת אנשים בפועל" },
-  scaling: { he: "בצמיחה", en: "Scaling", order: 5, hint: "מרחיבים למקומות ואנשים נוספים" },
+  idea: { he: "רעיון", en: "Idea", order: 0, hint: { he: "עוד לפני שהתחלנו לעשות", en: "Before we have started doing anything" } },
+  exploration: { he: "בחינה ראשונית", en: "Exploration", order: 1, hint: { he: "בודקים שאלות ומדברים עם אנשים", en: "Testing questions and talking with people" } },
+  prototype: { he: "אב־טיפוס", en: "Prototype", order: 2, hint: { he: "יש משהו ראשון שאפשר לגעת בו", en: "There is a first thing you can touch" } },
+  pilot: { he: "פיילוט", en: "Pilot", order: 3, hint: { he: "מנסים בקטן, בעולם האמיתי", en: "Trying it small, in the real world" } },
+  operating: { he: "בפעילות", en: "Operating", order: 4, hint: { he: "עובד ומשרת אנשים בפועל", en: "Working and serving people in practice" } },
+  scaling: { he: "בצמיחה", en: "Scaling", order: 5, hint: { he: "מרחיבים למקומות ואנשים נוספים", en: "Expanding to more places and people" } },
 };
 
 export const STAGE_ORDER: LifecycleStage[] = (
@@ -132,8 +139,8 @@ export const COLLAB_TYPES: Record<string, Label> = {
   technology: { he: "פיתוח טכנולוגי", en: "Technology" },
 };
 
-export function collabLabel(key: string): string {
-  return COLLAB_TYPES[key]?.he ?? humanize(key);
+export function collabLabel(key: string, locale: Locale = "he"): string {
+  return COLLAB_TYPES[key]?.[locale] ?? humanize(key);
 }
 
 export type NextStepId =
@@ -143,12 +150,12 @@ export type NextStepId =
   | "pilot"
   | "resource_sharing";
 
-export const NEXT_STEPS: Record<NextStepId, { he: string; hint: string }> = {
-  intro_call: { he: "שיחת היכרות", hint: "חצי שעה, בלי התחייבות — לבדוק אם יש כאן משהו." },
-  joint_experiment: { he: "ניסוי משותף", hint: "ניסוי קטן וקצר שמלמד את שני הצדדים משהו." },
-  knowledge_swap: { he: "החלפת ידע", hint: "מפגש שבו כל צד מלמד את השני משהו שהוא כבר יודע." },
-  pilot: { he: "פיילוט", hint: "להריץ את הרעיון בקטן, בקהילה אמיתית, לזמן מוגדר." },
-  resource_sharing: { he: "שיתוף משאב", hint: "להשאיל או לחלוק משאב שכבר קיים — מקום, כלי או נתונים." },
+export const NEXT_STEPS: Record<NextStepId, { label: Label; hint: Label }> = {
+  intro_call: { label: { he: "שיחת היכרות", en: "Intro call" }, hint: { he: "חצי שעה, בלי התחייבות — לבדוק אם יש כאן משהו.", en: "Half an hour, no commitment — to check whether there is something here." } },
+  joint_experiment: { label: { he: "ניסוי משותף", en: "Joint experiment" }, hint: { he: "ניסוי קטן וקצר שמלמד את שני הצדדים משהו.", en: "A small, short experiment that teaches both sides something." } },
+  knowledge_swap: { label: { he: "החלפת ידע", en: "Knowledge swap" }, hint: { he: "מפגש שבו כל צד מלמד את השני משהו שהוא כבר יודע.", en: "A meeting where each side teaches the other something it already knows." } },
+  pilot: { label: { he: "פיילוט", en: "Pilot" }, hint: { he: "להריץ את הרעיון בקטן, בקהילה אמיתית, לזמן מוגדר.", en: "Run the idea small, in a real community, for a set time." } },
+  resource_sharing: { label: { he: "שיתוף משאב", en: "Resource sharing" }, hint: { he: "להשאיל או לחלוק משאב שכבר קיים — מקום, כלי או נתונים.", en: "Lend or share a resource that already exists — a place, a tool or data." } },
 };
 
 /** Which next step tends to fit which kind of need. First entry is the natural one. */

@@ -1,3 +1,4 @@
+import type { Label } from "@/lib/taxonomy";
 import { normalize, stem, tokenize } from "@/lib/text";
 
 /**
@@ -10,8 +11,8 @@ import { normalize, stem, tokenize } from "@/lib/text";
 
 export interface Topic {
   id: string;
-  /** Hebrew label shown in the interpretation panel. */
-  label: string;
+  /** Label shown in the interpretation panel. */
+  label: Label;
   /** Words (he/en) that signal this topic. Stemmed automatically. */
   triggers: string[];
   domains: string[];
@@ -22,140 +23,140 @@ export interface Topic {
 export const TOPICS: Topic[] = [
   {
     id: "community",
-    label: "קהילה",
+    label: { he: "קהילה", en: "Community" },
     triggers: ["קהילה", "קהילות", "קהילתי", "שכנים", "שכונה", "שכונתי", "מקומי", "מקומית", "מקומיות", "מקומיים", "community", "communities", "neighbors", "neighbourhood", "neighborhood"],
     domains: ["communities", "local_resilience"],
     types: ["community"],
   },
   {
     id: "sharing",
-    label: "שיתוף",
+    label: { he: "שיתוף", en: "Sharing" },
     triggers: ["שיתוף", "לשתף", "משתפים", "חלוקה", "לחלוק", "share", "sharing", "shared", "commons"],
     domains: ["collaboration", "communities"],
     types: ["partnership"],
   },
   {
     id: "resources",
-    label: "משאבים",
+    label: { he: "משאבים", en: "Resources" },
     triggers: ["משאבים", "משאב", "ציוד", "כלים", "resources", "resource", "tools", "equipment"],
     domains: ["sustainability", "new_economy"],
     types: ["space", "funding", "data"],
   },
   {
     id: "knowledge",
-    label: "ידע ולמידה",
+    label: { he: "ידע ולמידה", en: "Knowledge and learning" },
     triggers: ["ידע", "ללמוד", "למידה", "לימוד", "ללמד", "הדרכה", "knowledge", "learning", "learn", "teach", "training"],
     domains: ["education"],
     types: ["knowledge", "mentorship"],
   },
   {
     id: "ai",
-    label: "בינה מלאכותית",
+    label: { he: "בינה מלאכותית", en: "Artificial intelligence" },
     triggers: ["בינה", "מלאכותית", "ai", "llm", "gpt", "אלגוריתם", "אלגוריתמים", "מודלים", "machine"],
     domains: ["ai_humans", "technology"],
     types: ["technology", "skills"],
   },
   {
     id: "technology",
-    label: "טכנולוגיה",
+    label: { he: "טכנולוגיה", en: "Technology" },
     triggers: ["טכנולוגיה", "טכנולוגי", "אפליקציה", "תוכנה", "דיגיטלי", "קוד", "מפתח", "מפתחים", "פיתוח", "software", "app", "code", "developer", "developers", "digital", "engineer", "engineers", "tech"],
     domains: ["technology"],
     types: ["technology", "skills"],
   },
   {
     id: "work",
-    label: "עתיד העבודה",
+    label: { he: "עתיד העבודה", en: "The future of work" },
     triggers: ["עבודה", "עובדים", "פרילנסרים", "פרילנס", "קריירה", "תעסוקה", "עצמאים", "work", "freelance", "freelancers", "career", "jobs", "workplace"],
     domains: ["future_of_work"],
     types: [],
   },
   {
     id: "economy",
-    label: "כלכלה אחרת",
+    label: { he: "כלכלה אחרת", en: "A different economy" },
     triggers: ["כלכלה", "כלכלי", "כסף", "מטבע", "אשראי", "זמן", "economy", "economic", "money", "currency", "credit", "exchange", "timebank"],
     domains: ["new_economy"],
     types: ["funding"],
   },
   {
     id: "education",
-    label: "חינוך",
+    label: { he: "חינוך", en: "Education" },
     triggers: ["חינוך", "חינוכי", "ספר", "תלמידים", "נוער", "מורים", "צעירים", "education", "school", "youth", "students", "teens", "teenagers"],
     domains: ["education"],
     types: ["mentorship"],
   },
   {
     id: "sustainability",
-    label: "קיימות",
+    label: { he: "קיימות", en: "Sustainability" },
     triggers: ["קיימות", "סביבה", "אקלים", "מיחזור", "תיקון", "בזבוז", "sustainability", "climate", "recycling", "repair", "waste", "environment"],
     domains: ["sustainability"],
     types: ["space", "skills"],
   },
   {
     id: "civic",
-    label: "ממשל ואזרחות",
+    label: { he: "ממשל ואזרחות", en: "Governance and citizenship" },
     triggers: ["ממשל", "עירייה", "עירוני", "מועצה", "תקציב", "דמוקרטיה", "אזרחים", "תושבים", "השתתפות", "civic", "government", "municipal", "democracy", "budget", "city", "council"],
     domains: ["civic_innovation"],
     types: ["data", "partnership"],
   },
   {
     id: "deliberation",
-    label: "קבלת החלטות משותפת",
+    label: { he: "קבלת החלטות משותפת", en: "Shared decision-making" },
     triggers: ["החלטות", "דיון", "דיאלוג", "קבוצה", "קבוצות", "הנחיה", "קולקטיבית", "קולקטיבי", "deliberation", "decisions", "decision", "facilitation", "collective", "consensus"],
     domains: ["collective_intelligence", "collaboration"],
     types: ["facilitation"],
   },
   {
     id: "resilience",
-    label: "חוסן וכוננות",
+    label: { he: "חוסן וכוננות", en: "Resilience and preparedness" },
     triggers: ["חוסן", "חירום", "מוכנות", "משבר", "משברים", "resilience", "emergency", "preparedness", "crisis"],
     domains: ["local_resilience"],
     types: ["community", "knowledge"],
   },
   {
     id: "funding",
-    label: "מימון",
+    label: { he: "מימון", en: "Funding" },
     triggers: ["מימון", "גיוס", "funding", "grant", "grants", "donation", "investment"],
     domains: ["new_economy"],
     types: ["funding"],
   },
   {
     id: "space",
-    label: "מרחב פיזי",
+    label: { he: "מרחב פיזי", en: "Physical space" },
     triggers: ["מרחב", "חלל", "אולם", "חדר", "סדנה", "מחסן", "space", "venue", "workshop", "room"],
     domains: ["communities", "sustainability"],
     types: ["space"],
   },
   {
     id: "mentoring",
-    label: "ליווי והדרכה",
+    label: { he: "ליווי והדרכה", en: "Mentoring and guidance" },
     triggers: ["ליווי", "מנטור", "מנטורים", "מנטורינג", "mentor", "mentors", "mentoring", "guidance", "coach"],
     domains: ["education"],
     types: ["mentorship"],
   },
   {
     id: "research",
-    label: "מחקר",
+    label: { he: "מחקר", en: "Research" },
     triggers: ["מחקר", "סקר", "ראיונות", "חוקר", "חוקרים", "research", "survey", "study", "researcher"],
     domains: [],
     types: ["research", "data"],
   },
   {
     id: "design",
-    label: "עיצוב",
+    label: { he: "עיצוב", en: "Design" },
     triggers: ["עיצוב", "מעצב", "מעצבים", "ux", "ui", "design", "designer", "designers"],
     domains: [],
     types: ["design", "skills"],
   },
   {
     id: "data",
-    label: "נתונים",
+    label: { he: "נתונים", en: "Data" },
     triggers: ["נתונים", "מידע", "דאטה", "data", "dataset", "datasets"],
     domains: ["civic_innovation"],
     types: ["data", "research"],
   },
   {
     id: "collaboration",
-    label: "שיתוף פעולה",
+    label: { he: "שיתוף פעולה", en: "Collaboration" },
     triggers: ["שותפים", "שותפות", "לשתף פעולה", "collaborate", "collaboration", "partners", "partnership"],
     domains: ["collaboration"],
     types: ["partnership"],
