@@ -136,7 +136,7 @@ export default async function HomePage() {
             id="connections-title"
             eyebrow="שכבת הבנה מעל המרחב"
             title="חיבורים שהמערכת מזהה"
-            description="חממה לא רק מציגה מיזמים. היא מחפשת איפה צורך של אחד פוגש הצעה של אחר — ותמיד אומרת למה, ומה עדיין לא ידוע."
+            description="החממה לא רק מציגה מיזמים. היא מחפשת איפה צורך של אחד פוגש הצעה של אחר — ותמיד אומרת למה, ומה עדיין לא ידוע."
           />
           <div className="space-y-7">
             {featured.map((c) => (

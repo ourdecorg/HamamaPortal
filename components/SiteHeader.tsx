@@ -28,7 +28,7 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-paper/80 backdrop-blur-xl">
       <div className="page-wrap flex h-[4.25rem] items-center justify-between gap-4">
-        <Link href="/" aria-label="חממה — לעמוד הבית" className="shrink-0">
+        <Link href="/" aria-label="החממה — לעמוד הבית" className="shrink-0">
           <Wordmark />
         </Link>
 

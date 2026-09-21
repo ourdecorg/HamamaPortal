@@ -25,7 +25,7 @@ export function Wordmark({ className, showSubtitle = true }: { className?: strin
     <span className={cn("flex items-center gap-2.5", className)}>
       <LogoMark className="text-leaf-700" />
       <span className="flex flex-col leading-none">
-        <span className="font-display text-[1.65rem] font-bold tracking-tight text-leaf-900">חממה</span>
+        <span className="font-display text-[1.65rem] font-bold tracking-tight text-leaf-900">החממה</span>
         {showSubtitle && (
           <span className="mt-1 hidden text-[0.68rem] font-medium tracking-wide text-ink-3 sm:block">
             פורטל מיזמי עתיד

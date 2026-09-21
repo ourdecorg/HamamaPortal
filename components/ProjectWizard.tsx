@@ -820,7 +820,7 @@ export function ProjectWizard({
                 <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">review_status</code> ל-<code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">pending_review</code> כדי שהמיזם לא יופיע עדיין.
               </li>
               <li>
-                <strong className="text-ink">3.</strong> חממה תזהה את הצרכים וההצעות שלכם ותציע חיבורים.
+                <strong className="text-ink">3.</strong> החממה תזהה את הצרכים וההצעות שלכם ותציע חיבורים.
               </li>
             </ol>
           </section>
