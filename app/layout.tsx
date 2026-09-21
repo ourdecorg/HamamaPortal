@@ -1,21 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Frank_Ruhl_Libre, Heebo } from "next/font/google";
+import { Assistant } from "next/font/google";
 import { Suspense } from "react";
 import { AccountMenu } from "@/components/AccountMenu";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
-const heebo = Heebo({
+const assistant = Assistant({
   subsets: ["hebrew", "latin"],
-  variable: "--font-heebo",
-  display: "swap",
-});
-
-const frank = Frank_Ruhl_Libre({
-  subsets: ["hebrew", "latin"],
-  variable: "--font-frank",
-  weight: ["400", "500", "700", "900"],
+  variable: "--font-assistant",
   display: "swap",
 });
 
@@ -40,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="he" dir="rtl" className={`${heebo.variable} ${frank.variable}`}>
+    <html lang="he" dir="rtl" className={assistant.variable}>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"

@@ -92,7 +92,7 @@ export function AdvanceConnectionPanel({ connection: c, signedIn, initial }: Pro
         <span className="grid size-8 place-items-center rounded-full bg-leaf-600 text-white">
           <Check className="size-4" aria-hidden="true" />
         </span>
-        <p role="status" className="font-display text-xl font-bold text-leaf-900">
+        <p role="status" className="font-display text-xl font-semibold text-leaf-900">
           החיבור נשמר ב״המרחב שלי״
         </p>
         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-leaf-800">{status.label}</span>

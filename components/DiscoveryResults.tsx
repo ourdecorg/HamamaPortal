@@ -75,7 +75,7 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
       <section aria-labelledby="found">
         {matches.length > 0 ? (
           <>
-            <h2 id="found" className="mb-2 font-display text-3xl font-bold text-leaf-900">
+            <h2 id="found" className="mb-2 font-display text-3xl font-semibold text-leaf-900">
               מצאנו {matches.length === 1 ? "מיזם אחד" : `${matches.length} מיזמים`} שעשויים להיות רלוונטיים
             </h2>
             <p className="mb-8 text-ink-2">לכל אחד מהם יש הסבר — למה הוא הופיע כאן.</p>
@@ -86,13 +86,13 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
                   <article className="grid gap-6 rounded-[2rem] border border-line bg-white/80 p-6 shadow-soft transition-shadow hover:shadow-lift sm:p-8 md:grid-cols-[1.1fr_1fr]">
                     <div className="flex flex-col">
                       <div className="mb-3 flex flex-wrap items-center gap-3">
-                        <span className="grid size-7 place-items-center rounded-full bg-leaf-100 font-display text-sm font-bold text-leaf-800">
+                        <span className="grid size-7 place-items-center rounded-full bg-leaf-100 font-display text-sm font-semibold text-leaf-800">
                           {idx + 1}
                         </span>
                         <StageBadge stage={project.status.lifecycle_stage} />
                         {project.portal.is_demo && <DemoTag />}
                       </div>
-                      <h3 className="font-display text-3xl font-bold leading-tight text-leaf-900">
+                      <h3 className="font-display text-3xl font-semibold leading-tight text-leaf-900">
                         <Link href={`/projects/${project.slug}`} className="underline-offset-4 hover:underline">
                           {t(project.name)}
                         </Link>
@@ -140,7 +140,7 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
           </>
         ) : (
           <div className="rounded-[2rem] border border-dashed border-line-2 bg-white/50 px-6 py-14 text-center">
-            <h2 id="found" className="font-display text-2xl font-bold text-leaf-900">
+            <h2 id="found" className="font-display text-2xl font-semibold text-leaf-900">
               לא מצאנו כרגע מיזם שמתאים בבירור
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-ink-2">
@@ -153,7 +153,7 @@ export function DiscoveryResults({ result, className }: { result: DiscoveryResul
       {/* what you could do */}
       {suggested_actions.length > 0 && (
         <section aria-labelledby="actions">
-          <h2 id="actions" className="mb-2 font-display text-2xl font-bold text-leaf-900">
+          <h2 id="actions" className="mb-2 font-display text-2xl font-semibold text-leaf-900">
             ומה אפשר לעשות עכשיו?
           </h2>
           <p className="mb-6 text-sm text-ink-3">הצעות בלבד. אתם מחליטים.</p>

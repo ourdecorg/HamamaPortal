@@ -52,7 +52,7 @@ export function SaveWishPanel({ values, signedIn }: { values: WishValues; signed
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-line bg-white/80 p-6 shadow-soft">
       <div className="max-w-xl">
-        <p className="font-display text-xl font-bold text-leaf-900">רוצים לשמור את המשאלה?</p>
+        <p className="font-display text-xl font-semibold text-leaf-900">רוצים לשמור את המשאלה?</p>
         <p className="mt-1 text-sm leading-relaxed text-ink-2">
           היא תחכה לכם ב״המרחב שלי״, פרטית, ואפשר יהיה לראות שם אילו מיזמים חדשים מתאימים לה.
           {!signedIn && " כדי לשמור נבקש מכם להיכנס — ובחזרה נשמור אותה בשבילכם."}

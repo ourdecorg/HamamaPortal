@@ -34,7 +34,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ sl
       <div className="page-wrap pb-10 pt-16">
         <div className="mx-auto max-w-xl rounded-[2rem] border border-line bg-white/80 p-8 text-center shadow-soft">
           <Lock className="mx-auto mb-4 size-6 text-ink-3" aria-hidden="true" />
-          <h1 className="font-display text-3xl font-bold text-leaf-900">העריכה פתוחה למטפחי המיזם</h1>
+          <h1 className="font-display text-3xl font-semibold text-leaf-900">העריכה פתוחה למטפחי המיזם</h1>
           <p className="mt-3 leading-relaxed text-ink-2">
             {stewardship?.status === "pending"
               ? "הבקשה שלכם לטפח את המיזם ממתינה לאישור. אחרי האישור תוכלו לערוך כאן."
@@ -55,7 +55,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ sl
           <ArrowRight className="size-4" /> חזרה לדף המיזם
         </Link>
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">עריכת מיזם</p>
-        <h1 className="font-display text-4xl font-black leading-tight text-leaf-900 sm:text-6xl">{t(project.name)}</h1>
+        <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">{t(project.name)}</h1>
       </header>
       <ProjectWizard mode="edit" slug={slug} initialDraft={draftFromProject(project)} />
     </div>

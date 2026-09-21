@@ -36,7 +36,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
       <header className="mb-10 max-w-2xl">
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">מיזמים</p>
-        <h1 className="font-display text-4xl font-black leading-tight text-leaf-900 sm:text-6xl">מי כבר בדרך?</h1>
+        <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">מי כבר בדרך?</h1>
         <p className="mt-4 text-lg leading-relaxed text-ink-2">
           מיזמים שמנסים ליצור עתיד אחר. לכל אחד מהם יש משהו שהוא צריך, ומשהו שהוא יכול להציע.
         </p>

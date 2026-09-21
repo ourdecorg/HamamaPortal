@@ -44,7 +44,7 @@ export default async function HomePage() {
               <span dir="ltr" className="text-leaf-800/80">Future Initiatives Portal</span>
             </p>
 
-            <h1 className="font-display text-[2.9rem] font-black leading-[1.05] text-leaf-900 sm:text-[4.4rem] lg:text-[4.9rem]">
+            <h1 className="font-display text-[2.9rem] font-semibold leading-[1.05] text-leaf-900 sm:text-[4.4rem] lg:text-[4.9rem]">
               מה היית רוצה
               <br />
               <span className="relative inline-block">
@@ -92,7 +92,7 @@ export default async function HomePage() {
         <ol className="grid gap-6 border-y border-line-2/80 py-7 sm:grid-cols-3 sm:gap-0">
           {HOW_IT_WORKS.map((s, i) => (
             <li key={s.n} className={cn("flex gap-4 sm:px-6", i > 0 && "sm:border-s sm:border-line-2/80", i === 0 && "sm:ps-0")}>
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-leaf-100 font-display text-sm font-bold text-leaf-800">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-leaf-100 font-display text-sm font-semibold text-leaf-800">
                 {s.n}
               </span>
               <span>
@@ -171,7 +171,7 @@ export default async function HomePage() {
                     style={{ backgroundColor: `hsl(${info.hue} 48% 52%)` }}
                   />
                   <span className="flex-1">
-                    <span className="block font-display text-[1.45rem] font-bold leading-tight text-leaf-900 transition-colors group-hover:text-leaf-600">
+                    <span className="block font-display text-[1.45rem] font-semibold leading-tight text-leaf-900 transition-colors group-hover:text-leaf-600">
                       {info.he}
                     </span>
                     <span className="block text-sm text-ink-3">{info.blurb}</span>
@@ -209,7 +209,7 @@ export default async function HomePage() {
           <div aria-hidden="true" className="absolute -end-20 -top-20 size-80 rounded-full bg-offer-500/20 blur-3xl" />
 
           <div className="relative max-w-xl sm:ms-auto">
-            <h2 id="wish-title" className="font-display text-3xl font-bold leading-tight sm:text-5xl">
+            <h2 id="wish-title" className="font-display text-3xl font-semibold leading-tight sm:text-5xl">
               לא מצאתם את מה שחיפשתם?
             </h2>
             <p className="mt-5 whitespace-pre-line text-lg leading-relaxed text-white/80">

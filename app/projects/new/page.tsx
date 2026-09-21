@@ -25,7 +25,7 @@ export default async function NewProjectPage({
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
       <header className="mb-12 max-w-2xl">
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">הוספת מיזם</p>
-        <h1 className="font-display text-4xl font-black leading-tight text-leaf-900 sm:text-6xl">בואו נכיר את המיזם שלכם.</h1>
+        <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">בואו נכיר את המיזם שלכם.</h1>
       </header>
       <ProjectWizard persist={persist} signedIn={signedIn} resume={persist && sp.resume === "1"} />
     </div>

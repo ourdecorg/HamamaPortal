@@ -193,7 +193,7 @@ export function ExploreClient({
           <span className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-leaf-50 text-leaf-600">
             <Sprout className="size-7" aria-hidden="true" />
           </span>
-          <h2 className="font-display text-2xl font-bold text-leaf-900">עדיין אין כאן מיזם כזה</h2>
+          <h2 className="font-display text-2xl font-semibold text-leaf-900">עדיין אין כאן מיזם כזה</h2>
           <p className="mx-auto mt-2 max-w-md text-ink-2">
             אולי המילים שונות מאלה שהמיזמים בחרו, ואולי זה פשוט לא קיים עדיין. אפשר לרחב את הסינון, לנסות גילוי בשפה חופשית — או לספר לנו מה חסר.
           </p>
