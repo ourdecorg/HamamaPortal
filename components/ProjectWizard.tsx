@@ -81,7 +81,7 @@ function ToggleChip({
 function StepIntro({ title, body }: { title: string; body: string }) {
   return (
     <div className="mb-8">
-      <h2 className="font-display text-3xl font-bold leading-tight text-leaf-900 sm:text-4xl">{title}</h2>
+      <h2 className="font-display text-3xl font-semibold leading-tight text-leaf-900 sm:text-4xl">{title}</h2>
       <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-2">{body}</p>
     </div>
   );
@@ -724,15 +724,15 @@ export function ProjectWizard({
             <dl className="grid gap-4 rounded-3xl border border-line bg-white/70 p-6 sm:grid-cols-3">
               <div>
                 <dt className="text-sm text-ink-3">מיזם</dt>
-                <dd className="font-display text-xl font-bold text-leaf-900">{draft.name}</dd>
+                <dd className="font-display text-xl font-semibold text-leaf-900">{draft.name}</dd>
               </div>
               <div>
                 <dt className="text-sm text-ink-3">צרכים</dt>
-                <dd className="font-display text-xl font-bold text-need-700">{previewProject.current_needs.length}</dd>
+                <dd className="font-display text-xl font-semibold text-need-700">{previewProject.current_needs.length}</dd>
               </div>
               <div>
                 <dt className="text-sm text-ink-3">הצעות</dt>
-                <dd className="font-display text-xl font-bold text-offer-700">{previewProject.offers.length}</dd>
+                <dd className="font-display text-xl font-semibold text-offer-700">{previewProject.offers.length}</dd>
               </div>
             </dl>
 

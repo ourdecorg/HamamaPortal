@@ -29,7 +29,7 @@ export default async function DiscoverPage({
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
       <header className="mb-10 max-w-3xl">
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">גילוי</p>
-        <h1 className="font-display text-4xl font-black leading-tight text-leaf-900 sm:text-6xl">
+        <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">
           ספרו לנו, ונראה מה כבר קיים.
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-ink-2">
@@ -50,7 +50,7 @@ export default async function DiscoverPage({
           <DiscoveryResults result={result} />
 
           <section className="mt-16 rounded-[2rem] bg-paper-2/70 p-7 sm:p-9" aria-labelledby="not-found">
-            <h2 id="not-found" className="font-display text-2xl font-bold text-leaf-900">
+            <h2 id="not-found" className="font-display text-2xl font-semibold text-leaf-900">
               לא מצאתם את מה שחיפשתם?
             </h2>
             <p className="mt-2 max-w-xl text-ink-2">
@@ -67,7 +67,7 @@ export default async function DiscoverPage({
       ) : (
         <div className="mt-16 grid gap-14 lg:grid-cols-2">
           <section aria-labelledby="try">
-            <h2 id="try" className="mb-4 font-display text-2xl font-bold text-leaf-900">
+            <h2 id="try" className="mb-4 font-display text-2xl font-semibold text-leaf-900">
               רוצים רעיון להתחלה?
             </h2>
             <ul className="space-y-3">
@@ -86,7 +86,7 @@ export default async function DiscoverPage({
           </section>
 
           <section aria-labelledby="by-domain">
-            <h2 id="by-domain" className="mb-4 font-display text-2xl font-bold text-leaf-900">
+            <h2 id="by-domain" className="mb-4 font-display text-2xl font-semibold text-leaf-900">
               או להתחיל מנושא
             </h2>
             <div className="flex flex-wrap gap-2.5">

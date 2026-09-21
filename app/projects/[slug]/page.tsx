@@ -34,7 +34,7 @@ function SectionTitle({ id, eyebrow, children }: { id: string; eyebrow?: string;
   return (
     <div className="mb-8">
       {eyebrow && <p className="mb-2 text-sm font-semibold tracking-wide text-leaf-600">{eyebrow}</p>}
-      <h2 id={id} className="font-display text-3xl font-bold text-leaf-900 sm:text-4xl">
+      <h2 id={id} className="font-display text-3xl font-semibold text-leaf-900 sm:text-4xl">
         {children}
       </h2>
     </div>
@@ -95,7 +95,7 @@ export default async function ProjectPage({
             {project.portal.is_demo && <DemoTag />}
           </div>
 
-          <h1 className="mt-5 font-display text-5xl font-black leading-[1.05] text-leaf-900 sm:text-7xl">{t(project.name)}</h1>
+          <h1 className="mt-5 font-display text-5xl font-semibold leading-[1.05] text-leaf-900 sm:text-7xl">{t(project.name)}</h1>
           <p className="mt-5 max-w-3xl font-display text-2xl leading-snug text-ink sm:text-[1.9rem]">{t(project.tagline)}</p>
 
           <div className="mt-6 flex flex-wrap gap-2">
@@ -224,7 +224,7 @@ export default async function ProjectPage({
           </div>
         ) : (
           <div className="rounded-[2rem] border border-dashed border-line-2 bg-white/50 p-10 text-center">
-            <h3 className="font-display text-2xl font-bold text-leaf-900">עדיין לא זיהינו חיבור ברור</h3>
+            <h3 className="font-display text-2xl font-semibold text-leaf-900">עדיין לא זיהינו חיבור ברור</h3>
             <p className="mx-auto mt-2 max-w-lg text-ink-2">
               זה לא אומר שאין — רק שהצרכים וההצעות הנוכחיים לא נפגשים באף מיזם אחר. תיאור מדויק יותר של צורך או הצעה יכול לשנות את התמונה.
             </p>
@@ -246,7 +246,7 @@ export default async function ProjectPage({
                   <li key={s.name} className="flex items-center gap-3">
                     <span
                       aria-hidden="true"
-                      className="grid size-11 place-items-center rounded-full bg-leaf-100 font-display text-lg font-bold text-leaf-800"
+                      className="grid size-11 place-items-center rounded-full bg-leaf-100 font-display text-lg font-semibold text-leaf-800"
                     >
                       {s.name.trim()[0]}
                     </span>

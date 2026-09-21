@@ -35,7 +35,7 @@ export default async function LoginPage({
     <div className="page-wrap pb-10 pt-12 sm:pt-20">
       <div className="mx-auto max-w-md">
         <header className="mb-10 text-center">
-          <h1 className="font-display text-4xl font-black leading-tight text-leaf-900 sm:text-5xl">כניסה לחממה</h1>
+          <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-5xl">כניסה לחממה</h1>
           <p className="mt-4 text-lg leading-relaxed text-ink-2">
             אפשר לגלול, לחפש ולהכיר מיזמים בלי להתחבר. כניסה נחוצה רק כדי לשמור משהו — משאלה, חיבור או מיזם.
           </p>

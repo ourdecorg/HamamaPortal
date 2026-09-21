@@ -33,7 +33,7 @@ function Section({ id, eyebrow, title, hint, children }: { id: string; eyebrow: 
   return (
     <section aria-labelledby={id} className="mt-16 first:mt-0">
       <p className="mb-2 text-sm font-semibold tracking-wide text-leaf-600">{eyebrow}</p>
-      <h2 id={id} className="font-display text-3xl font-bold text-leaf-900">
+      <h2 id={id} className="font-display text-3xl font-semibold text-leaf-900">
         {title}
       </h2>
       <p className="mb-8 mt-2 max-w-2xl text-ink-2">{hint}</p>
@@ -98,7 +98,7 @@ async function WishCard({ wish, projects }: { wish: WishRow; projects: Project[]
               const reasons = (result.reasons[project.id] ?? []).slice(0, 2);
               return (
                 <li key={project.id} className="rounded-2xl bg-paper-2/70 p-4">
-                  <Link href={`/projects/${project.slug}`} className="font-display text-lg font-bold text-leaf-900 underline-offset-4 hover:underline">
+                  <Link href={`/projects/${project.slug}`} className="font-display text-lg font-semibold text-leaf-900 underline-offset-4 hover:underline">
                     {t(project.name)}
                   </Link>
                   <ul className="mt-1.5 space-y-1 text-sm leading-relaxed text-ink-2">
@@ -172,7 +172,7 @@ async function MyProjects() {
                   <span className="rounded-full bg-paper-2 px-2.5 py-0.5 font-medium text-ink-2">{ACTIVITY_STATUS[project.status.activity_status].he}</span>
                   {project.portal.is_demo && <DemoTag />}
                 </div>
-                <h3 className="font-display text-2xl font-bold text-leaf-900">
+                <h3 className="font-display text-2xl font-semibold text-leaf-900">
                   <Link href={`/projects/${project.slug}`} className="underline-offset-4 hover:underline">
                     {t(project.name)}
                   </Link>
@@ -271,7 +271,7 @@ function MyConnections({ opportunities, projects }: { opportunities: Opportunity
 
             <p className="text-lg leading-relaxed text-ink">
               {source ? (
-                <Link href={`/projects/${source.slug}`} className="font-display font-bold text-leaf-900 underline-offset-4 hover:underline">
+                <Link href={`/projects/${source.slug}`} className="font-display font-semibold text-leaf-900 underline-offset-4 hover:underline">
                   {t(source.name)}
                 </Link>
               ) : (
@@ -280,7 +280,7 @@ function MyConnections({ opportunities, projects }: { opportunities: Opportunity
               {need && <span> מחפש/ת {shortLabel(need)}</span>}
               <span className="text-ink-3"> ⇄ </span>
               {target ? (
-                <Link href={`/projects/${target.slug}`} className="font-display font-bold text-leaf-900 underline-offset-4 hover:underline">
+                <Link href={`/projects/${target.slug}`} className="font-display font-semibold text-leaf-900 underline-offset-4 hover:underline">
                   {t(target.name)}
                 </Link>
               ) : (
@@ -342,7 +342,7 @@ export default async function MySpacePage({
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
       <header className="mb-14 max-w-3xl">
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">המרחב שלי</p>
-        <h1 className="font-display text-4xl font-black leading-tight text-leaf-900 sm:text-6xl">שלום, {displayNameOf(user)}.</h1>
+        <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">שלום, {displayNameOf(user)}.</h1>
         <p className="mt-4 text-lg leading-relaxed text-ink-2">
           כאן נמצא מה שביקשתם לשמור: משאלות, מיזמים שאתם מטפחים וחיבורים שאתם רוצים לקדם. הכול פרטי, אלא אם החלטתם אחרת.
         </p>

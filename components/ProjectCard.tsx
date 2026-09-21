@@ -50,7 +50,7 @@ export function ProjectCard({ project, variant = "explore", matchedFields = [], 
       <Link href={`/projects/${project.slug}`} className={cn(base, "gap-5", className)}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-2xl font-bold leading-tight text-leaf-900">{t(project.name)}</h3>
+            <h3 className="font-display text-2xl font-semibold leading-tight text-leaf-900">{t(project.name)}</h3>
             <StageBadge stage={project.status.lifecycle_stage} className="mt-2" />
           </div>
           {project.portal.is_demo && <DemoTag />}
@@ -91,7 +91,7 @@ export function ProjectCard({ project, variant = "explore", matchedFields = [], 
       </div>
 
       <div>
-        <h3 className="font-display text-[1.6rem] font-bold leading-tight text-leaf-900">{t(project.name)}</h3>
+        <h3 className="font-display text-[1.6rem] font-semibold leading-tight text-leaf-900">{t(project.name)}</h3>
         <p className="mt-1.5 leading-snug text-ink-2">{t(project.tagline)}</p>
       </div>
 

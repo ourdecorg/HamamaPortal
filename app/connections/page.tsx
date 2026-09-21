@@ -41,7 +41,7 @@ export default async function ConnectionsPage({
       {/* intro ───────────────────────────────────────────────── */}
       <header className="page-wrap pb-14 pt-12 sm:pt-16">
         <p className="mb-3 text-sm font-semibold tracking-wide text-link-700">Connections · חיבורים</p>
-        <h1 className="max-w-4xl font-display text-4xl font-black leading-[1.1] text-leaf-900 sm:text-6xl">
+        <h1 className="max-w-4xl font-display text-4xl font-semibold leading-[1.1] text-leaf-900 sm:text-6xl">
           לא רק מיזמים.
           <br />
           <span className="text-link-500">האפשרויות שבין המיזמים.</span>
@@ -93,7 +93,7 @@ export default async function ConnectionsPage({
           </>
         ) : (
           <div className="rounded-[2rem] border border-dashed border-line-2 bg-white/50 px-6 py-16 text-center">
-            <h2 className="font-display text-2xl font-bold text-leaf-900">עדיין לא זיהינו חיבורים</h2>
+            <h2 className="font-display text-2xl font-semibold text-leaf-900">עדיין לא זיהינו חיבורים</h2>
             <p className="mx-auto mt-2 max-w-md text-ink-2">
               כשמיזמים יוסיפו צרכים והצעות, כאן יופיעו המקומות שבהם הם נפגשים.
             </p>
@@ -109,7 +109,7 @@ export default async function ConnectionsPage({
         <section className="page-wrap mt-24" aria-labelledby="unmet-title">
           <div className="max-w-2xl">
             <p className="mb-3 text-sm font-semibold tracking-wide text-need-700">Opportunities · הזדמנויות</p>
-            <h2 id="unmet-title" className="font-display text-3xl font-bold text-leaf-900 sm:text-4xl">
+            <h2 id="unmet-title" className="font-display text-3xl font-semibold text-leaf-900 sm:text-4xl">
               צרכים שעדיין מחכים להצעה
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-ink-2">

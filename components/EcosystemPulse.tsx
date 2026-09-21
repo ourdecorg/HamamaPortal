@@ -43,7 +43,7 @@ export function EcosystemPulse({ stats, className }: { stats: EcosystemStats; cl
                 i === 0 && "lg:border-s-0 lg:ps-0",
               )}
             >
-              <div className="order-1 m-0 font-display text-[3.4rem] font-black leading-none tracking-tight sm:text-[4.2rem]">
+              <div className="order-1 m-0 font-display text-[3.4rem] font-bold leading-none tracking-tight sm:text-[4.2rem]">
                 <span className={item.color}>{stats[item.key]}</span>
               </div>
               <div className="order-2 mt-2 flex items-center gap-2 text-sm font-semibold text-ink">

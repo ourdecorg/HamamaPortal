@@ -7,7 +7,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
   return (
     <div className="page-wrap grid place-items-center py-28 text-center" role="alert">
       <div className="max-w-md">
-        <h1 className="font-display text-4xl font-black text-leaf-900">משהו השתבש</h1>
+        <h1 className="font-display text-4xl font-semibold text-leaf-900">משהו השתבש</h1>
         <p className="mt-4 text-lg leading-relaxed text-ink-2">
           זה לא אתם — זו אנחנו. אפשר לנסות שוב, ואם זה חוזר, לחזור לעמוד הבית.
         </p>

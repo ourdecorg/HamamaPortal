@@ -28,7 +28,7 @@ export default async function WishesPage({
             <span className="text-need-700/50">·</span>
             <span dir="ltr">Wish Well</span>
           </p>
-          <h1 className="font-display text-5xl font-black leading-tight text-leaf-900 sm:text-7xl">מה היית רוצה שיקרה?</h1>
+          <h1 className="font-display text-5xl font-semibold leading-tight text-leaf-900 sm:text-7xl">מה היית רוצה שיקרה?</h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-2">
             משאלה היא נקודת התחלה. ספרו לנו עליה — ואולי כבר קיימים אנשים או מיזמים שמנסים ליצור בדיוק את זה.
           </p>

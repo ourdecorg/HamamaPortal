@@ -9,7 +9,7 @@ export default function NotFound() {
         <span className="mx-auto mb-6 grid size-16 place-items-center rounded-full bg-leaf-50 text-leaf-600">
           <Sprout className="size-8" aria-hidden="true" />
         </span>
-        <h1 className="font-display text-4xl font-black text-leaf-900">כאן עוד לא צמח כלום</h1>
+        <h1 className="font-display text-4xl font-semibold text-leaf-900">כאן עוד לא צמח כלום</h1>
         <p className="mt-4 text-lg leading-relaxed text-ink-2">
           הדף או המיזם שחיפשתם לא נמצאו. אולי הכתובת השתנתה — ואולי זה בדיוק המקום שבו יכול לצמוח משהו חדש.
         </p>

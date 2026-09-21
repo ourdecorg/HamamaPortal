@@ -66,7 +66,7 @@ function Side({
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <Link
           href={`/projects/${project.slug}`}
-          className="font-display text-xl font-bold leading-tight text-leaf-900 underline-offset-4 hover:underline"
+          className="font-display text-xl font-semibold leading-tight text-leaf-900 underline-offset-4 hover:underline"
         >
           {project.name}
         </Link>
