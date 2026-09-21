@@ -2,13 +2,7 @@
 
 export type OpportunityStatus = "suggested" | "interested" | "intro_requested" | "in_progress" | "closed";
 
-export const OPPORTUNITY_STATUS: Record<OpportunityStatus, { label: string; hint: string }> = {
-  suggested: { label: "הוצע", hint: "המערכת זיהתה את החיבור. עוד לא הגבתם." },
-  interested: { label: "רוצים לקדם", hint: "סימנתם שאתם רוצים לקדם. הצעד הבא הוא שלכם: היכרות, בירור או שיחה קצרה." },
-  intro_requested: { label: "ביקשתם היכרות", hint: "אתם מכינים היכרות. החממה לא שולחת דבר — ההודעה יוצאת רק מכם." },
-  in_progress: { label: "בתהליך", hint: "הצדדים כבר בשיחה." },
-  closed: { label: "נסגר", hint: "לא מקדמים את החיבור הזה כרגע." },
-};
+// Labels and hints for each status live in the message dictionaries (opportunity.status).
 
 export interface OpportunityRow {
   id: string;

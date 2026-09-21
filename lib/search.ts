@@ -23,18 +23,6 @@ export type SearchField =
   | "needs"
   | "offers";
 
-export const SEARCH_FIELD_LABELS: Record<SearchField, string> = {
-  name: "בשם",
-  tagline: "בתיאור הקצר",
-  description: "בתיאור",
-  vision: "בחזון",
-  problem: "בבעיה",
-  change: "בשינוי הרצוי",
-  domains: "בתחומים",
-  needs: "בצרכים",
-  offers: "בהצעות",
-};
-
 const FIELD_WEIGHTS: Record<SearchField, number> = {
   name: 6,
   tagline: 3.5,
@@ -69,7 +57,7 @@ function buildIndex(p: Project): FieldIndex {
     domains: textOf(
       p.domains.flatMap((d) => {
         const info = domainInfo(d);
-        return [d.replace(/_/g, " "), info.he, info.en, info.blurb];
+        return [d.replace(/_/g, " "), info.he, info.en, info.blurb.he, info.blurb.en];
       }),
     ),
     needs: textOf(

@@ -53,7 +53,8 @@ export async function POST(request: Request) {
     await fs.writeFile(target, JSON.stringify(parsed.data, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "EEXIST") {
-      return json({ error: `המזהה "${slug}" כבר קיים. בחרו מזהה אחר.` }, 409);
+      // The wizard turns the code into a message in the visitor's language.
+      return json({ error: `The identifier "${slug}" already exists. Choose another one.`, code: "slug_exists", slug }, 409);
     }
     return json({ error: "Could not write the file." }, 500);
   }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/components/LocaleProvider";
 import { LIFECYCLE_STAGES, STAGE_ORDER } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
 import type { LifecycleStage } from "@/types/project";
@@ -15,9 +18,10 @@ export function StageBadge({
   showHint?: boolean;
   className?: string;
 }) {
+  const locale = useLocale();
   const info = LIFECYCLE_STAGES[stage];
   return (
-    <span className={cn("inline-flex items-center gap-2 text-xs font-medium text-ink-2", className)} title={info.hint}>
+    <span className={cn("inline-flex items-center gap-2 text-xs font-medium text-ink-2", className)} title={info.hint[locale]}>
       <span className="flex items-center gap-[3px]" aria-hidden="true">
         {STAGE_ORDER.map((s) => (
           <span
@@ -30,8 +34,8 @@ export function StageBadge({
         ))}
       </span>
       <span>
-        {info.he}
-        {showHint && <span className="ms-1.5 font-normal text-ink-3">· {info.hint}</span>}
+        {info[locale]}
+        {showHint && <span className="ms-1.5 font-normal text-ink-3">· {info.hint[locale]}</span>}
       </span>
     </span>
   );

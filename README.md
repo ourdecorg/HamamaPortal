@@ -85,6 +85,17 @@ Tip: add English `keywords` to needs and offers in the JSON. They make matching 
 
 `discover({ query, projects, context })` → `{ interpretation, matches, reasons, suggested_actions }`. Today it is a heuristic (topic lexicon + keyword scoring). Nothing needs an API key. `DiscoveryProvider` / `LlmClient` / `createLlmProvider()` define the seam for a model; to enable one, return it from `getDiscoveryProvider()` (e.g. when `ANTHROPIC_API_KEY` is set). A provider can only rank and explain projects that exist in the data, and any failure falls back to the heuristic.
 
+## Languages (Hebrew and English)
+
+Every page lives under a language prefix: `/he/...` and `/en/...`. A URL with no prefix is redirected by `proxy.ts` to the visitor's language (their last choice, then the browser's `Accept-Language`, then Hebrew). The header has a switch link, and `<html lang dir>` follows the language, so English is laid out left-to-right and Hebrew right-to-left.
+
+- **UI text** is in `lib/i18n/messages/he.ts` and `en.ts`. `he.ts` defines the shape; `en.ts` is typed against it, so a missing key fails `npm run typecheck`. Server components use `getMessages()` / `getLocale()` (`lib/i18n/server.ts`), client components use `useMessages()` / `useLocale()` (`components/LocaleProvider.tsx`), and server actions receive the language from the caller (`lib/i18n/action-locale.ts`).
+- **Links**: import `Link` from `@/components/LocaleLink` (not `next/link`) so links keep the language. `NextArrow` / `PrevArrow` (`components/Arrows.tsx`) point the right way in both directions. Use logical Tailwind classes (`ms-`, `ps-`, `start-`), never `ml-` / `left-`.
+- **Project content** is bilingual data (`{ default, translations: { he, en } }`); a text missing in the visitor's language falls back to the other one. What someone types in the wizard is stored under the language of the page they typed it on.
+- **Engines**: `findConnections`, `discover` and the wizard helpers take a `locale`, so explanations are written in the visitor's language.
+- **Add a language**: add it to `LOCALES` / `LOCALE_META` in `lib/i18n/config.ts`, write `messages/<code>.ts`, register it in `messages/index.ts`, and extend the `{ he, en }` label pairs in `lib/taxonomy.ts` and `lib/topics.ts`.
+- `/auth/callback` and `/api/*` stay un-prefixed (Supabase and Google have the callback URL on their allow-lists), so no auth configuration changes.
+
 ## Principles carried in the UI
 
 - **Structured before smart** — JSON first, AI later.

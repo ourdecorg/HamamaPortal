@@ -1,4 +1,7 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/components/LocaleLink";
+import { useLocale } from "@/components/LocaleProvider";
 import { domainInfo } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +16,7 @@ interface DomainTagProps {
 
 /** A domain pill with a quiet colored dot — the dot is the only color, so rows of tags stay calm. */
 export function DomainTag({ domain, size = "sm", linked = false, count, className }: DomainTagProps) {
+  const locale = useLocale();
   const info = domainInfo(domain);
   const classes = cn(
     "inline-flex items-center gap-1.5 rounded-full border border-line bg-white/70 font-medium text-ink-2",
@@ -27,7 +31,7 @@ export function DomainTag({ domain, size = "sm", linked = false, count, classNam
         className={cn("rounded-full", size === "sm" ? "size-1.5" : "size-2")}
         style={{ backgroundColor: `hsl(${info.hue} 48% 52%)` }}
       />
-      {info.he}
+      {info[locale]}
       {typeof count === "number" && <span className="text-ink-3">{count}</span>}
     </>
   );

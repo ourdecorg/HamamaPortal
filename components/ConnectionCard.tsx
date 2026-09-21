@@ -1,11 +1,15 @@
-import Link from "next/link";
-import { ArrowLeft, ArrowLeftRight, ArrowUpDown, CircleDashed, Gift, HelpCircle, Repeat2, Sparkles } from "lucide-react";
+import { Link } from "@/components/LocaleLink";
+import { ArrowLeftRight, ArrowUpDown, CircleDashed, Gift, HelpCircle, Repeat2, Sparkles } from "lucide-react";
+import { NextArrow } from "@/components/Arrows";
 import { DemoTag } from "@/components/ProjectCard";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 import { AdvanceConnection } from "@/components/AdvanceConnection";
 import { SignalMeter } from "@/components/SignalMeter";
 import { TypeIcon } from "@/components/TypeIcon";
 import { buttonVariants } from "@/components/ui/button";
 import type { Connection, ProjectRef } from "@/lib/matching";
+import type { Locale } from "@/lib/i18n/config";
+import type { Messages } from "@/lib/i18n/messages";
 import { exchangeType } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
 
@@ -24,12 +28,16 @@ function Side({
   item,
   full,
   isSelf,
+  m,
+  locale,
 }: {
   role: "need" | "offer";
   project: ProjectRef;
   item: Connection["need"];
   full: boolean;
   isSelf: boolean;
+  m: Messages;
+  locale: Locale;
 }) {
   const isNeed = role === "need";
   const Icon = isNeed ? CircleDashed : Gift;
@@ -50,7 +58,7 @@ function Side({
       >
         <span className="inline-flex items-center gap-1.5">
           <Icon className="size-3.5" aria-hidden="true" />
-          {isNeed ? "מי צריך" : "מי יכול להציע"}
+          {isNeed ? m.connectionCard.whoNeeds : m.connectionCard.whoOffers}
         </span>
         <span
           className={cn(
@@ -59,7 +67,7 @@ function Side({
           )}
         >
           <TypeIcon type={item.type} className="size-3" />
-          {exchangeType(item.type).he}
+          {exchangeType(item.type)[locale]}
         </span>
       </div>
 
@@ -71,18 +79,18 @@ function Side({
           {project.name}
         </Link>
         {isSelf && (
-          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[0.65rem] font-medium text-ink-2">המיזם הזה</span>
+          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[0.65rem] font-medium text-ink-2">{m.common.thisProject}</span>
         )}
       </div>
 
-      <p className="mb-1 text-xs text-ink-3">{isNeed ? "מחפש" : "מציע"}</p>
+      <p className="mb-1 text-xs text-ink-3">{isNeed ? m.connectionCard.seeks : m.connectionCard.offers}</p>
       <p className="font-medium leading-snug text-ink">{item.label}</p>
       {full && <p className="mt-2 text-sm leading-relaxed text-ink-2">{item.description}</p>}
     </div>
   );
 }
 
-function Connector({ reciprocal }: { reciprocal: boolean }) {
+function Connector({ reciprocal, label }: { reciprocal: boolean; label: string }) {
   return (
     <div className="relative flex items-center justify-center py-2 lg:w-24 lg:py-0" aria-hidden="true">
       {/* the thread: vertical on small screens, horizontal on large */}
@@ -94,15 +102,18 @@ function Connector({ reciprocal }: { reciprocal: boolean }) {
       </span>
       {reciprocal && (
         <span className="absolute end-0 z-10 inline-flex items-center gap-1 rounded-full bg-link-100 px-2 py-0.5 text-[0.65rem] font-semibold text-link-700 lg:hidden">
-          <Repeat2 className="size-3" /> הדדי
+          <Repeat2 className="size-3" /> {label}
         </span>
       )}
     </div>
   );
 }
 
-export function ConnectionCard({ connection: c, variant = "full", perspectiveId, className }: ConnectionCardProps) {
+export async function ConnectionCard({ connection: c, variant = "full", perspectiveId, className }: ConnectionCardProps) {
   const full = variant === "full";
+  const locale = await getLocale();
+  const m = await getMessages();
+  const cc = m.connectionCard;
 
   return (
     <article
@@ -116,10 +127,10 @@ export function ConnectionCard({ connection: c, variant = "full", perspectiveId,
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-link-100 bg-link-50/60 px-5 py-2.5 sm:px-7">
         <span className="inline-flex items-center gap-2 text-xs font-semibold text-link-700">
           <Sparkles className="size-3.5" aria-hidden="true" />
-          חיבור אפשרי
+          {cc.possible}
           {c.reciprocal && (
             <span className="hidden items-center gap-1 rounded-full bg-link-100 px-2 py-0.5 text-[0.65rem] lg:inline-flex">
-              <Repeat2 className="size-3" /> הדדי
+              <Repeat2 className="size-3" /> {m.common.mutual}
             </span>
           )}
           {(c.project_a.is_demo || c.project_b.is_demo) && <DemoTag />}
@@ -129,15 +140,15 @@ export function ConnectionCard({ connection: c, variant = "full", perspectiveId,
 
       {/* 1. WHO NEEDS WHAT ↔ WHO CAN OFFER WHAT */}
       <div className="grid items-stretch gap-0 p-5 sm:p-7 lg:grid-cols-[1fr_auto_1fr]">
-        <Side role="need" project={c.project_a} item={c.need} full={full} isSelf={perspectiveId === c.project_a.id} />
-        <Connector reciprocal={Boolean(c.reciprocal)} />
-        <Side role="offer" project={c.project_b} item={c.offer} full={full} isSelf={perspectiveId === c.project_b.id} />
+        <Side role="need" project={c.project_a} item={c.need} full={full} isSelf={perspectiveId === c.project_a.id} m={m} locale={locale} />
+        <Connector reciprocal={Boolean(c.reciprocal)} label={m.common.mutual} />
+        <Side role="offer" project={c.project_b} item={c.offer} full={full} isSelf={perspectiveId === c.project_b.id} m={m} locale={locale} />
       </div>
 
       {/* 2. WHY THIS MAY WORK · 3. WHAT IS UNKNOWN */}
       <div className={cn("grid gap-6 border-t border-link-100 px-5 py-6 sm:px-7", full ? "md:grid-cols-[1.25fr_1fr]" : "md:grid-cols-[1.25fr_1fr]")}>
         <div>
-          <h4 className="mb-2 font-sans text-sm font-semibold text-link-700">למה החיבור עשוי להיות מעניין?</h4>
+          <h4 className="mb-2 font-sans text-sm font-semibold text-link-700">{cc.whyInteresting}</h4>
           <p className="leading-relaxed text-ink">{c.summary}</p>
           {full && (
             <ul className="mt-3 space-y-1.5 text-sm text-ink-2">
@@ -160,7 +171,7 @@ export function ConnectionCard({ connection: c, variant = "full", perspectiveId,
 
         <div>
           <h4 className="mb-2 flex items-center gap-1.5 font-sans text-sm font-semibold text-ink-2">
-            <HelpCircle className="size-4 text-ink-3" aria-hidden="true" /> מה עדיין לא ידוע
+            <HelpCircle className="size-4 text-ink-3" aria-hidden="true" /> {cc.unknown}
           </h4>
           {full ? (
             <ul className="space-y-1.5 text-sm text-ink-2">
@@ -186,7 +197,7 @@ export function ConnectionCard({ connection: c, variant = "full", perspectiveId,
       {/* 4. WHAT COULD HAPPEN NEXT */}
       {full ? (
         <div className="border-t border-link-100 bg-paper/60 px-5 py-6 sm:px-7">
-          <h4 className="mb-3 font-sans text-sm font-semibold text-ink">מה יכול לקרות הלאה?</h4>
+          <h4 className="mb-3 font-sans text-sm font-semibold text-ink">{cc.nextTitle}</h4>
           <ol className="mb-5 grid gap-3 sm:grid-cols-3">
             {c.next_steps.map((s, i) => (
               <li key={s.id} className="rounded-2xl border border-line bg-white/70 p-4">
@@ -202,9 +213,9 @@ export function ConnectionCard({ connection: c, variant = "full", perspectiveId,
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3 border-t border-link-100 bg-paper/60 px-5 py-4 sm:px-7">
-          <p className="hidden text-xs text-ink-3 sm:block">הצעה, לא הכרעה — אנשים מחליטים אם יש כאן משהו.</p>
+          <p className="hidden text-xs text-ink-3 sm:block">{cc.suggestionNote}</p>
           <Link href={`/connections#${c.id}`} className={cn(buttonVariants({ variant: "link", size: "sm" }), "ms-auto")}>
-            בחינת החיבור <ArrowLeft />
+            {cc.examine} <NextArrow />
           </Link>
         </div>
       )}

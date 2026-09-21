@@ -1,3 +1,5 @@
+import { localePath, type Locale } from "@/lib/i18n/config";
+
 /**
  * Post-login destinations. Pure (no server imports) so client components can build login links too.
  *
@@ -10,6 +12,9 @@ export function safeNext(raw: unknown, fallback = "/"): string {
   return raw.slice(0, 500);
 }
 
-export function loginUrl(next: string): string {
-  return `/login?next=${encodeURIComponent(safeNext(next))}`;
+/** The sign-in page URL that returns to `next`. With a locale, both the login page and `next` get its prefix. */
+export function loginUrl(next: string, locale?: Locale): string {
+  const target = safeNext(next);
+  if (!locale) return `/login?next=${encodeURIComponent(target)}`;
+  return `/${locale}/login?next=${encodeURIComponent(localePath(locale, target))}`;
 }

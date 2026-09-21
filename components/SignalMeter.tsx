@@ -1,4 +1,7 @@
-import { signalStrength } from "@/lib/matching";
+"use client";
+
+import { useMessages } from "@/components/LocaleProvider";
+import { signalLevel } from "@/lib/signal";
 import { cn } from "@/lib/utils";
 
 /**
@@ -6,11 +9,12 @@ import { cn } from "@/lib/utils";
  * deliberately not a percentage. It is a hint; the written reasons matter more.
  */
 export function SignalMeter({ confidence, className }: { confidence: number; className?: string }) {
-  const { level, label } = signalStrength(confidence);
+  const m = useMessages().connectionCard;
+  const level = signalLevel(confidence);
   return (
     <span
       className={cn("inline-flex items-center gap-2 text-xs font-medium text-link-700", className)}
-      title="רמז בלבד. ההסבר חשוב יותר מהסימן."
+      title={m.signalHint}
     >
       <span className="flex items-end gap-[3px]" aria-hidden="true">
         {[1, 2, 3].map((i) => (
@@ -21,7 +25,7 @@ export function SignalMeter({ confidence, className }: { confidence: number; cla
           />
         ))}
       </span>
-      {label}
+      {m.signal[level]}
     </span>
   );
 }

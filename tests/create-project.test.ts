@@ -21,7 +21,8 @@ import {
 } from "@/lib/project-draft";
 import { projectSchema } from "@/lib/schema";
 import { readSeedProjects } from "@/lib/seed-data";
-import { emptyDraft, newItem, prepareNewProject, type Draft } from "@/lib/wizard";
+import { emptyDraft, newItem, type Draft } from "@/lib/wizard";
+import { prepareNewProject } from "@/lib/wizard-server";
 import type { Project } from "@/types/project";
 import { asUser, createMigratedDb } from "./helpers/pg";
 

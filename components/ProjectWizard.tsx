@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/LocaleLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { ArrowLeft, ArrowRight, Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Sprout, Trash2 } from "lucide-react";
-import { createProject, saveProjectEdits } from "@/app/projects/actions";
+import { Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Sprout, Trash2 } from "lucide-react";
+import { NextArrow, PrevArrow } from "@/components/Arrows";
+import { createProject, saveProjectEdits } from "@/app/[lang]/projects/actions";
 import { ProjectCard } from "@/components/ProjectCard";
 import { TypeIcon } from "@/components/TypeIcon";
+import { useLocale, useLocalePath, useMessages } from "@/components/LocaleProvider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/field";
 import {
@@ -19,7 +21,7 @@ import {
   ACTIVITY_STATUS,
 } from "@/lib/taxonomy";
 import {
-  STEPS,
+  STEP_IDS,
   buildProject,
   buildProjectFile,
   emptyDraft,
@@ -31,6 +33,7 @@ import {
   type ItemDraft,
   type StepId,
 } from "@/lib/wizard";
+import { fmt } from "@/lib/i18n/format";
 import { loginUrl } from "@/lib/next-path";
 import { forgetProjectDraft, rememberProjectDraft, takeProjectDraft } from "@/lib/project-draft";
 import { cn } from "@/lib/utils";
@@ -89,7 +92,7 @@ function StepIntro({ title, body }: { title: string; body: string }) {
 
 // -------------------------------------------------------- need / offer list --
 
-const NEED_STATUS_LABEL: Record<Need["status"], string> = { open: "פתוח", in_conversation: "בשיחה", fulfilled: "נענה" };
+
 
 function ItemEditor({
   kind,
@@ -110,6 +113,10 @@ function ItemEditor({
   const isNeed = kind === "need";
   const Icon = isNeed ? CircleDashed : Gift;
   const [showKeywords, setShowKeywords] = useState(Boolean(item.keywords));
+  const locale = useLocale();
+  const messages = useMessages();
+  const m = messages.wizard.item;
+  const needStatus = messages.project.needStatus;
 
   return (
     <fieldset
@@ -120,17 +127,17 @@ function ItemEditor({
     >
       <legend className={cn("flex items-center gap-2 px-2 text-sm font-semibold", isNeed ? "text-need-700" : "text-offer-700")}>
         <Icon className="size-4" aria-hidden="true" />
-        {isNeed ? "צורך" : "הצעה"} {index + 1}
+        {isNeed ? m.need : m.offer} {index + 1}
       </legend>
 
       <div className="space-y-5">
         <div>
-          <p className="mb-2 text-sm font-medium text-ink">איזה סוג?</p>
+          <p className="mb-2 text-sm font-medium text-ink">{m.whichType}</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(EXCHANGE_TYPES).map(([key, info]) => (
               <ToggleChip key={key} active={item.type === key} tone={kind} onClick={() => onChange({ type: key })}>
                 <TypeIcon type={key} className="size-3.5" />
-                {info.he}
+                {info[locale]}
               </ToggleChip>
             ))}
           </div>
@@ -138,11 +145,11 @@ function ItemEditor({
 
         {showStatus && isNeed && (
           <div>
-            <p className="mb-2 text-sm font-medium text-ink">מצב הצורך</p>
+            <p className="mb-2 text-sm font-medium text-ink">{m.needState}</p>
             <div className="flex flex-wrap gap-2">
-              {(Object.keys(NEED_STATUS_LABEL) as Need["status"][]).map((st) => (
+              {(Object.keys(needStatus) as Need["status"][]).map((st) => (
                 <ToggleChip key={st} tone="need" active={(item.status ?? "open") === st} onClick={() => onChange({ status: st })}>
-                  {NEED_STATUS_LABEL[st]}
+                  {needStatus[st]}
                 </ToggleChip>
               ))}
             </div>
@@ -150,50 +157,50 @@ function ItemEditor({
         )}
 
         <div>
-          <Label htmlFor={`${item.uid}-title`}>{isNeed ? "מה מחפשים — במשפט קצר?" : "מה מציעים — במשפט קצר?"}</Label>
+          <Label htmlFor={`${item.uid}-title`}>{isNeed ? m.needTitle : m.offerTitle}</Label>
           <Input
             id={`${item.uid}-title`}
             value={item.title}
             onChange={(e) => onChange({ title: e.target.value })}
-            placeholder={isNeed ? "למשל: קבוצה של 30 אנשים לפיילוט" : "למשל: גישה לשלוש קבוצות שכנים"}
+            placeholder={isNeed ? m.needTitlePh : m.offerTitlePh}
           />
         </div>
 
         <div>
-          <Label htmlFor={`${item.uid}-desc`}>קצת יותר פירוט</Label>
+          <Label htmlFor={`${item.uid}-desc`}>{m.detail}</Label>
           <Textarea
             id={`${item.uid}-desc`}
             rows={3}
             value={item.description}
             onChange={(e) => onChange({ description: e.target.value })}
-            placeholder={isNeed ? "מה בדיוק חסר, ולמה זה חשוב עכשיו?" : "מה בדיוק אפשר לקבל, ובאילו תנאים?"}
+            placeholder={isNeed ? m.needDetailPh : m.offerDetailPh}
           />
         </div>
 
         {showKeywords ? (
           <div>
-            <Label htmlFor={`${item.uid}-kw`} hint="(אופציונלי)">
-              מילות מפתח, מופרדות בפסיק
+            <Label htmlFor={`${item.uid}-kw`} hint={messages.wish.optional}>
+              {m.keywords}
             </Label>
             <Input
               id={`${item.uid}-kw`}
               value={item.keywords}
               onChange={(e) => onChange({ keywords: e.target.value })}
-              placeholder="neighbors, pilot, tool"
+              placeholder={m.keywordsPh}
               dir="ltr"
             />
-            <Hint>מילות מפתח עוזרות למערכת לזהות חיבורים מדויקים יותר. עדיף אנגלית — כך אפשר להתאים בין מיזמים בשפות שונות.</Hint>
+            <Hint>{m.keywordsHint}</Hint>
           </div>
         ) : (
           <button type="button" onClick={() => setShowKeywords(true)} className="text-sm font-medium text-ink-2 underline-offset-4 hover:text-leaf-700 hover:underline">
-            הוספת מילות מפתח (לא חובה)
+            {m.addKeywords}
           </button>
         )}
       </div>
 
       <div className="mt-5 flex justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-          <Trash2 /> הסרה
+          <Trash2 /> {m.remove}
         </Button>
       </div>
     </fieldset>
@@ -229,6 +236,10 @@ export function ProjectWizard({
 }: ProjectWizardProps) {
   const editing = mode === "edit" && Boolean(editSlug);
   const router = useRouter();
+  const locale = useLocale();
+  const lp = useLocalePath();
+  const messages = useMessages();
+  const m = messages.wizard;
   const [draft, setDraft] = useState<Draft>(initialDraft ?? emptyDraft);
   const [saveState, setSaveState] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving_, startSaving] = useTransition();
@@ -240,15 +251,18 @@ export function ProjectWizard({
   const [resuming, setResuming] = useState(resume);
   const resumeStarted = useRef(false);
 
-  const step: StepId = STEPS[stepIndex].id;
-  const isLast = stepIndex === STEPS.length - 1;
+  const step: StepId = STEP_IDS[stepIndex];
+  const isLast = stepIndex === STEP_IDS.length - 1;
 
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
   const patchItem = (kind: "needs" | "offers", uid: string, p: Partial<ItemDraft>) =>
     setDraft((d) => ({ ...d, [kind]: d[kind].map((it) => (it.uid === uid ? { ...it, ...p } : it)) }));
 
-  const previewProject = useMemo(() => buildProject(draft, true), [draft]);
-  const file = useMemo(() => buildProjectFile(draft), [draft]);
+  const previewProject = useMemo(
+    () => buildProject(draft, { name: m.preview.namePlaceholder, tagline: m.preview.taglinePlaceholder }, locale),
+    [draft, m.preview.namePlaceholder, m.preview.taglinePlaceholder, locale],
+  );
+  const file = useMemo(() => buildProjectFile(draft, locale), [draft, locale]);
   const fileIssues = useMemo(() => (isLast ? validateFile(file) : []), [file, isLast]);
   const json = useMemo(() => JSON.stringify(file, null, 2), [file]);
   const slug = editing ? editSlug! : draft.slug || slugify(draft.name);
@@ -256,14 +270,14 @@ export function ProjectWizard({
   function saveEdits() {
     setSaveState(null);
     startSaving(async () => {
-      const res = await saveProjectEdits(editSlug!, draft);
+      const res = await saveProjectEdits(editSlug!, draft, locale);
       if (res.status === "saved") {
-        router.push(`/projects/${editSlug}`);
+        router.push(lp(`/projects/${editSlug}`));
         router.refresh();
       } else if (res.status === "auth_required") {
-        router.push(loginUrl(`/projects/${editSlug}/edit`));
+        router.push(loginUrl(`/projects/${editSlug}/edit`, locale));
       } else if (res.status === "forbidden") {
-        setSaveState({ ok: false, text: "אין לכם הרשאה לערוך את המיזם הזה. ההרשאה ניתנת אחרי אישור בקשת הטיפוח." });
+        setSaveState({ ok: false, text: m.review.forbidden });
       } else {
         setSaveState({ ok: false, text: res.error });
       }
@@ -272,19 +286,19 @@ export function ProjectWizard({
 
   /** Create the project in Supabase. A visitor is sent to sign in first; the draft waits in this browser. */
   async function publishDraft(d: Draft, fromResume: boolean): Promise<"navigating" | "stay"> {
-    const res = await createProject(d);
+    const res = await createProject(d, locale);
     if (res.status === "created") {
       forgetProjectDraft();
-      router.push(`/projects/${res.slug}?created=1`);
+      router.push(lp(`/projects/${res.slug}?created=1`));
       return "navigating";
     }
     if (res.status === "auth_required") {
       rememberProjectDraft(d);
       if (!fromResume) {
-        router.push(loginUrl("/projects/new?resume=1"));
+        router.push(loginUrl("/projects/new?resume=1", locale));
         return "navigating";
       }
-      setSaveState({ ok: false, text: "ההתחברות לא הושלמה, ולכן המיזם עוד לא נוצר. הטיוטה שמורה — אפשר לנסות שוב." });
+      setSaveState({ ok: false, text: m.review.signInIncomplete });
       return "stay";
     }
     setSaveState({ ok: false, text: res.error });
@@ -305,12 +319,12 @@ export function ProjectWizard({
 
     const waiting = takeProjectDraft();
     if (!waiting) {
-      router.replace("/projects/new");
+      router.replace(lp("/projects/new"));
       return;
     }
     startSaving(async () => {
       setDraft(waiting);
-      setStepIndex(STEPS.length - 1);
+      setStepIndex(STEP_IDS.length - 1);
       // On success the page navigates away, so the "saving…" notice stays until then.
       if ((await publishDraft(waiting, true)) === "stay") setResuming(false);
     });
@@ -319,10 +333,10 @@ export function ProjectWizard({
   }, [resume, router]);
 
   function next() {
-    const found = validateStep(step, draft);
+    const found = validateStep(step, draft, m.errors);
     setErrors(found);
     if (Object.keys(found).length === 0) {
-      setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+      setStepIndex((i) => Math.min(i + 1, STEP_IDS.length - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
@@ -363,14 +377,17 @@ export function ProjectWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(file),
       });
-      const body = (await res.json()) as { file?: string; error?: string };
+      const body = (await res.json()) as { file?: string; error?: string; code?: string; slug?: string };
       setDevMessage(
         res.ok
-          ? { ok: true, text: `נשמר ב-${body.file}. כדי שהמיזם יופיע בפורטל, הריצו npm run db:seed.` }
-          : { ok: false, text: body.error ?? "השמירה נכשלה." },
+          ? { ok: true, text: fmt(m.demo.savedAs, { file: body.file ?? "" }) }
+          : {
+              ok: false,
+              text: body.code === "slug_exists" ? fmt(m.demo.slugExists, { slug: body.slug ?? "" }) : (body.error ?? m.demo.saveFailed),
+            },
       );
     } catch {
-      setDevMessage({ ok: false, text: "השמירה נכשלה." });
+      setDevMessage({ ok: false, text: m.demo.saveFailed });
     } finally {
       setSaving(false);
     }
@@ -380,7 +397,7 @@ export function ProjectWizard({
     return (
       <p role="status" className="flex items-center justify-center gap-3 rounded-2xl bg-leaf-50 px-5 py-4 font-medium text-leaf-900">
         <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-        יוצרים את המיזם שלכם…
+        {m.review.creating}
       </p>
     );
   }
@@ -389,10 +406,10 @@ export function ProjectWizard({
     <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-16">
       <div>
         {/* progress */}
-        <nav aria-label="שלבי ההוספה" className="mb-10">
+        <nav aria-label={m.stepsAria} className="mb-10">
           <ol className="flex items-center gap-2">
-            {STEPS.map((s, i) => (
-              <li key={s.id} className="flex flex-1 items-center gap-2 last:flex-none">
+            {STEP_IDS.map((id, i) => (
+              <li key={id} className="flex flex-1 items-center gap-2 last:flex-none">
                 <span
                   aria-current={i === stepIndex ? "step" : undefined}
                   className={cn(
@@ -404,57 +421,57 @@ export function ProjectWizard({
                 >
                   {i < stepIndex ? <Check className="size-4" /> : i + 1}
                 </span>
-                {i < STEPS.length - 1 && (
+                {i < STEP_IDS.length - 1 && (
                   <span className={cn("h-0.5 flex-1 rounded-full", i < stepIndex ? "bg-leaf-500" : "bg-line-2")} aria-hidden="true" />
                 )}
               </li>
             ))}
           </ol>
           <p className="mt-3 text-sm font-medium text-ink-2">
-            שלב {stepIndex + 1} מתוך {STEPS.length} · {STEPS[stepIndex].label}
+            {fmt(m.stepOf, { n: stepIndex + 1, total: STEP_IDS.length, label: m.steps[step] })}
           </p>
         </nav>
 
         {/* 1 · IDENTITY */}
         {step === "identity" && (
           <section>
-            <StepIntro title="נתחיל מהכרות" body="איך קוראים למיזם, ובמשפט אחד — מה הוא עושה?" />
+            <StepIntro title={m.identity.title} body={m.identity.body} />
             <div className="space-y-7">
               <div>
-                <Label htmlFor="name">שם המיזם</Label>
+                <Label htmlFor="name">{m.identity.name}</Label>
                 <Input
                   id="name"
                   value={draft.name}
                   onChange={(e) => patch({ name: e.target.value, ...(draft.slugTouched ? {} : { slug: slugify(e.target.value) }) })}
-                  placeholder="למשל: שכנים לומדים"
+                  placeholder={m.identity.namePh}
                   autoFocus
                 />
                 <FieldError message={errors.name} />
               </div>
               <div>
-                <Label htmlFor="tagline">משפט אחד</Label>
+                <Label htmlFor="tagline">{m.identity.tagline}</Label>
                 <Input
                   id="tagline"
                   value={draft.tagline}
                   onChange={(e) => patch({ tagline: e.target.value })}
-                  placeholder="למשל: כל שכונה מלאה במורים. רק צריך לגלות מי הם."
+                  placeholder={m.identity.taglinePh}
                 />
                 <FieldError message={errors.tagline} />
               </div>
               <div>
-                <Label htmlFor="short_description">תיאור קצר</Label>
+                <Label htmlFor="short_description">{m.identity.description}</Label>
                 <Textarea
                   id="short_description"
                   rows={4}
                   value={draft.short_description}
                   onChange={(e) => patch({ short_description: e.target.value })}
-                  placeholder="שלושה־ארבעה משפטים: מה עושים, עם מי, ואיך זה נראה בפועל."
+                  placeholder={m.identity.descriptionPh}
                 />
                 <FieldError message={errors.short_description} />
               </div>
               <div>
-                <Label htmlFor="slug" hint={editing ? "(לא ניתן לשינוי)" : "(משמש בכתובת ובשם הקובץ)"}>
-                  מזהה באנגלית
+                <Label htmlFor="slug" hint={editing ? m.identity.slugHintEdit : m.identity.slugHintNew}>
+                  {m.identity.slug}
                 </Label>
                 <Input
                   id="slug"
@@ -465,9 +482,9 @@ export function ProjectWizard({
                   className={cn("max-w-xs text-start", editing && "bg-paper-2 text-ink-3")}
                 />
                 <Hint>
-                  {editing ? "הכתובת של המיזם נשארת כפי שהיא, כדי שקישורים קיימים ימשיכו לעבוד: " : "הכתובת תהיה "}
+                  {editing ? m.identity.slugNoteEdit : m.identity.slugNoteNew}
                   <span dir="ltr" className="font-mono text-ink-2">/projects/{slug}</span>
-                  {!editing && persist && " — ואם היא כבר תפוסה, נוסיף לה מספר."}
+                  {!editing && persist && m.identity.slugTaken}
                 </Hint>
                 <FieldError message={errors.slug} />
               </div>
@@ -478,39 +495,39 @@ export function ProjectWizard({
         {/* 2 · INTENT */}
         {step === "intent" && (
           <section>
-            <StepIntro title="למה המיזם קיים?" body="כאן הסיפור. אנשים מתחברים לכוונה, לא רק לתיאור." />
+            <StepIntro title={m.intent.title} body={m.intent.body} />
             <div className="space-y-7">
               <div>
-                <Label htmlFor="vision">איזה עולם אתם רוצים לראות?</Label>
+                <Label htmlFor="vision">{m.intent.vision}</Label>
                 <Textarea
                   id="vision"
                   rows={3}
                   value={draft.vision}
                   onChange={(e) => patch({ vision: e.target.value })}
-                  placeholder="תארו את העתיד כאילו הוא כבר קרה."
+                  placeholder={m.intent.visionPh}
                   autoFocus
                 />
                 <FieldError message={errors.vision} />
               </div>
               <div>
-                <Label htmlFor="problem">מה לא עובד היום?</Label>
+                <Label htmlFor="problem">{m.intent.problem}</Label>
                 <Textarea
                   id="problem"
                   rows={3}
                   value={draft.problem}
                   onChange={(e) => patch({ problem: e.target.value })}
-                  placeholder="הבעיה המרכזית שאתם רואים."
+                  placeholder={m.intent.problemPh}
                 />
                 <FieldError message={errors.problem} />
               </div>
               <div>
-                <Label htmlFor="desired_change">איזה שינוי אתם רוצים ליצור?</Label>
+                <Label htmlFor="desired_change">{m.intent.change}</Label>
                 <Textarea
                   id="desired_change"
                   rows={3}
                   value={draft.desired_change}
                   onChange={(e) => patch({ desired_change: e.target.value })}
-                  placeholder="במשפט או שניים: מה יהיה שונה אם תצליחו?"
+                  placeholder={m.intent.changePh}
                 />
                 <FieldError message={errors.desired_change} />
               </div>
@@ -521,10 +538,7 @@ export function ProjectWizard({
         {/* 3 · NEEDS */}
         {step === "needs" && (
           <section>
-            <StepIntro
-              title="מה אתם צריכים עכשיו?"
-              body="צורך טוב הוא ספציפי: 'קבוצה של 30 אנשים לפיילוט' ולא 'עזרה'. אפשר להוסיף כמה שרוצים, או לדלג אם אין כרגע."
-            />
+            <StepIntro title={m.needs.title} body={m.needs.body} />
             <div className="space-y-5">
               {draft.needs.map((n, i) => (
                 <ItemEditor
@@ -539,12 +553,12 @@ export function ProjectWizard({
               ))}
               {draft.needs.length === 0 && (
                 <p className="rounded-2xl border border-dashed border-line-2 p-5 text-ink-2">
-                  אין צרכים כרגע. זה בסדר — אפשר להוסיף אחר כך.
+                  {m.needs.empty}
                 </p>
               )}
               {draft.needs.length < 5 && (
                 <Button variant="secondary" onClick={() => patch({ needs: [...draft.needs, newItem("community")] })}>
-                  <Plus /> הוספת צורך
+                  <Plus /> {m.needs.add}
                 </Button>
               )}
             </div>
@@ -554,10 +568,7 @@ export function ProjectWizard({
         {/* 4 · OFFERS */}
         {step === "offers" && (
           <section>
-            <StepIntro
-              title="מה אתם יכולים להציע?"
-              body="לכל מיזם יש משהו לתת: ידע, קהילה, כלי, מקום, זמן. גם דבר קטן יכול להיות בדיוק מה שמישהו אחר מחפש."
-            />
+            <StepIntro title={m.offers.title} body={m.offers.body} />
             <div className="space-y-5">
               {draft.offers.map((o, i) => (
                 <ItemEditor
@@ -571,12 +582,12 @@ export function ProjectWizard({
               ))}
               {draft.offers.length === 0 && (
                 <p className="rounded-2xl border border-dashed border-line-2 p-5 text-ink-2">
-                  אין הצעות כרגע. אפשר לחזור לכאן בכל שלב.
+                  {m.offers.empty}
                 </p>
               )}
               {draft.offers.length < 5 && (
                 <Button variant="secondary" onClick={() => patch({ offers: [...draft.offers, newItem("knowledge")] })}>
-                  <Plus /> הוספת הצעה
+                  <Plus /> {m.offers.add}
                 </Button>
               )}
             </div>
@@ -586,10 +597,10 @@ export function ProjectWizard({
         {/* 5 · DETAILS */}
         {step === "details" && (
           <section>
-            <StepIntro title="עוד כמה פרטים" body="תחום, שלב וקישורים. מה שלא רלוונטי — אפשר להשאיר ריק." />
+            <StepIntro title={m.details.title} body={m.details.body} />
             <div className="space-y-9">
               <fieldset>
-                <legend className="mb-2.5 text-sm font-medium text-ink">בחרו תחום (או כמה)</legend>
+                <legend className="mb-2.5 text-sm font-medium text-ink">{m.details.domains}</legend>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(DOMAINS).map(([key, info]) => (
                     <ToggleChip
@@ -599,7 +610,7 @@ export function ProjectWizard({
                         patch({ domains: draft.domains.includes(key) ? draft.domains.filter((d) => d !== key) : [...draft.domains, key] })
                       }
                     >
-                      {info.he}
+                      {info[locale]}
                     </ToggleChip>
                   ))}
                 </div>
@@ -607,7 +618,7 @@ export function ProjectWizard({
               </fieldset>
 
               <fieldset>
-                <legend className="mb-2.5 text-sm font-medium text-ink">באיזה שלב אתם?</legend>
+                <legend className="mb-2.5 text-sm font-medium text-ink">{m.details.stage}</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {STAGE_ORDER.map((s) => (
                     <button
@@ -620,8 +631,8 @@ export function ProjectWizard({
                         draft.stage === s ? "border-leaf-600 bg-leaf-50 ring-2 ring-leaf-200" : "border-line-2 bg-white/70 hover:border-leaf-300",
                       )}
                     >
-                      <span className="block font-medium text-ink">{LIFECYCLE_STAGES[s].he}</span>
-                      <span className="text-sm text-ink-3">{LIFECYCLE_STAGES[s].hint}</span>
+                      <span className="block font-medium text-ink">{LIFECYCLE_STAGES[s][locale]}</span>
+                      <span className="text-sm text-ink-3">{LIFECYCLE_STAGES[s].hint[locale]}</span>
                     </button>
                   ))}
                 </div>
@@ -629,33 +640,33 @@ export function ProjectWizard({
 
               <div className="grid gap-7 sm:grid-cols-2">
                 <fieldset>
-                  <legend className="mb-2.5 text-sm font-medium text-ink">מצב פעילות</legend>
+                  <legend className="mb-2.5 text-sm font-medium text-ink">{m.details.activity}</legend>
                   <div className="flex flex-wrap gap-2">
                     {(Object.keys(ACTIVITY_STATUS) as (keyof typeof ACTIVITY_STATUS)[]).map((a) => (
                       <ToggleChip key={a} active={draft.activity === a} onClick={() => patch({ activity: a })}>
-                        {ACTIVITY_STATUS[a].he}
+                        {ACTIVITY_STATUS[a][locale]}
                       </ToggleChip>
                     ))}
                   </div>
                 </fieldset>
                 <fieldset>
-                  <legend className="mb-2.5 text-sm font-medium text-ink">היקף פעילות</legend>
+                  <legend className="mb-2.5 text-sm font-medium text-ink">{m.details.scope}</legend>
                   <div className="flex flex-wrap gap-2">
                     {(Object.keys(GEOGRAPHY_SCOPES) as GeographyScope[]).map((s) => (
                       <ToggleChip key={s} active={draft.scope === s} onClick={() => patch({ scope: draft.scope === s ? "" : s })}>
-                        {GEOGRAPHY_SCOPES[s].he}
+                        {GEOGRAPHY_SCOPES[s][locale]}
                       </ToggleChip>
                     ))}
                   </div>
                   {draft.scope && (
-                    <Input className="mt-3" value={draft.place} onChange={(e) => patch({ place: e.target.value })} placeholder="איפה? (עיר, אזור — אופציונלי)" aria-label="מקום" />
+                    <Input className="mt-3" value={draft.place} onChange={(e) => patch({ place: e.target.value })} placeholder={m.details.placePh} aria-label={m.details.placeAria} />
                   )}
                 </fieldset>
               </div>
 
               <fieldset>
-                <legend className="mb-1 text-sm font-medium text-ink">איך אתם אוהבים לשתף פעולה?</legend>
-                <Hint>עוזר לזהות חיבורים עם מי שעובד בסגנון דומה.</Hint>
+                <legend className="mb-1 text-sm font-medium text-ink">{m.details.collab}</legend>
+                <Hint>{m.details.collabHint}</Hint>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {Object.entries(COLLAB_TYPES).map(([key, info]) => (
                     <ToggleChip
@@ -663,7 +674,7 @@ export function ProjectWizard({
                       active={draft.collab.includes(key)}
                       onClick={() => patch({ collab: draft.collab.includes(key) ? draft.collab.filter((c) => c !== key) : [...draft.collab, key] })}
                     >
-                      {info.he}
+                      {info[locale]}
                     </ToggleChip>
                   ))}
                 </div>
@@ -671,19 +682,19 @@ export function ProjectWizard({
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="steward">מי מטפח את המיזם?</Label>
-                  <Input id="steward" value={draft.steward_name} onChange={(e) => patch({ steward_name: e.target.value })} placeholder="שם" />
+                  <Label htmlFor="steward">{m.details.steward}</Label>
+                  <Input id="steward" value={draft.steward_name} onChange={(e) => patch({ steward_name: e.target.value })} placeholder={m.details.stewardPh} />
                 </div>
                 <div>
-                  <Label htmlFor="steward-role">תפקיד</Label>
-                  <Input id="steward-role" value={draft.steward_role} onChange={(e) => patch({ steward_role: e.target.value })} placeholder="למשל: מייסדת" />
+                  <Label htmlFor="steward-role">{m.details.role}</Label>
+                  <Input id="steward-role" value={draft.steward_role} onChange={(e) => patch({ steward_role: e.target.value })} placeholder={m.details.rolePh} />
                 </div>
               </div>
 
               <div className="grid gap-5 sm:grid-cols-3">
                 {(
                   [
-                    ["website", "אתר"],
+                    ["website", m.details.website],
                     ["linkedin", "LinkedIn"],
                     ["github", "GitHub"],
                   ] as const
@@ -702,17 +713,13 @@ export function ProjectWizard({
         {step === "review" && (editing || persist) && (
           <section>
             <StepIntro
-              title={editing ? "מוכנים לשמור?" : "מוכנים לפרסם?"}
-              body={
-                editing
-                  ? "השינויים יופיעו בדף המיזם מיד, והחיבורים יחושבו מחדש לפי הצרכים וההצעות המעודכנים."
-                  : "המיזם יופיע בפורטל מיד, והצרכים וההצעות שלכם ייכנסו לחיבורים. אתם תהיו המטפחים שלו, ותוכלו לערוך אותו בכל שלב."
-              }
+              title={editing ? m.review.saveTitle : m.review.publishTitle}
+              body={editing ? m.review.saveBody : m.review.publishBody}
             />
 
             {fileIssues.length > 0 && (
               <div role="alert" className="mb-6 rounded-2xl border border-need-200 bg-need-50 p-5 text-sm text-need-700">
-                <p className="mb-2 font-semibold">כמה דברים חסרים לפני שאפשר לשמור:</p>
+                <p className="mb-2 font-semibold">{m.review.missing}</p>
                 <ul className="list-disc space-y-1 ps-5" dir="ltr">
                   {fileIssues.slice(0, 6).map((i) => (
                     <li key={i}>{i}</li>
@@ -723,15 +730,15 @@ export function ProjectWizard({
 
             <dl className="grid gap-4 rounded-3xl border border-line bg-white/70 p-6 sm:grid-cols-3">
               <div>
-                <dt className="text-sm text-ink-3">מיזם</dt>
+                <dt className="text-sm text-ink-3">{m.review.project}</dt>
                 <dd className="font-display text-xl font-semibold text-leaf-900">{draft.name}</dd>
               </div>
               <div>
-                <dt className="text-sm text-ink-3">צרכים</dt>
+                <dt className="text-sm text-ink-3">{m.review.needs}</dt>
                 <dd className="font-display text-xl font-semibold text-need-700">{previewProject.current_needs.length}</dd>
               </div>
               <div>
-                <dt className="text-sm text-ink-3">הצעות</dt>
+                <dt className="text-sm text-ink-3">{m.review.offers}</dt>
                 <dd className="font-display text-xl font-semibold text-offer-700">{previewProject.offers.length}</dd>
               </div>
             </dl>
@@ -739,17 +746,15 @@ export function ProjectWizard({
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button size="lg" onClick={editing ? saveEdits : publish} disabled={saving_ || fileIssues.length > 0}>
                 {saving_ ? <Loader2 className="animate-spin" /> : editing ? <Save /> : <Sprout />}
-                {editing ? (saving_ ? "שומר…" : "שמירת שינויים") : saving_ ? "יוצר…" : "פרסום המיזם"}
+                {editing ? (saving_ ? m.review.saving : m.review.save) : saving_ ? m.review.publishing : m.review.publish}
               </Button>
               {editing && (
                 <Link href={`/projects/${editSlug}`} className={buttonVariants({ variant: "ghost", size: "lg" })}>
-                  ביטול
+                  {m.review.cancel}
                 </Link>
               )}
             </div>
-            {!editing && !signedIn && (
-              <Hint>כדי לפרסם נבקש מכם להיכנס לחשבון. מה שמילאתם כאן ישמר ויחכה לכם, ובחזרה המיזם ייווצר אוטומטית.</Hint>
-            )}
+            {!editing && !signedIn && <Hint>{m.review.signInNote}</Hint>}
             {saveState && (
               <p role={saveState.ok ? "status" : "alert"} className={cn("mt-4 text-sm font-medium", saveState.ok ? "text-leaf-700" : "text-need-700")}>
                 {saveState.text}
@@ -761,14 +766,11 @@ export function ProjectWizard({
         {/* 6 · REVIEW — demo mode only (no database): a JSON file for the seed data */}
         {step === "review" && !editing && !persist && (
           <section>
-            <StepIntro
-              title="הנה המיזם שלכם"
-              body="הפורטל רץ כרגע במצב הדגמה, בלי מסד נתונים, ולכן אי אפשר לפרסם. הכלי מכין קובץ JSON — הורידו אותו והניחו בתיקייה, ומנהל/ת המערכת מייבא/ת אותו."
-            />
+            <StepIntro title={m.demo.title} body={m.demo.body} />
 
             {fileIssues.length > 0 && (
               <div role="alert" className="mb-6 rounded-2xl border border-need-200 bg-need-50 p-5 text-sm text-need-700">
-                <p className="mb-2 font-semibold">כמה דברים חסרים לפני שאפשר לשמור:</p>
+                <p className="mb-2 font-semibold">{m.review.missing}</p>
                 <ul className="list-disc space-y-1 ps-5" dir="ltr">
                   {fileIssues.slice(0, 6).map((i) => (
                     <li key={i}>{i}</li>
@@ -780,7 +782,7 @@ export function ProjectWizard({
             <div className="overflow-hidden rounded-3xl border border-line-2 bg-leaf-900 shadow-lift">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-3 text-xs text-white/60" dir="ltr">
                 <span className="font-mono">data/projects/{slug}.json</span>
-                <span>{json.split("\n").length} lines</span>
+                <span>{fmt(m.demo.lines, { n: json.split("\n").length })}</span>
               </div>
               <pre dir="ltr" tabIndex={0} className="max-h-[26rem] overflow-auto p-5 text-start font-mono text-[0.8rem] leading-relaxed text-leaf-100">
                 {json}
@@ -789,19 +791,19 @@ export function ProjectWizard({
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button size="lg" onClick={download} disabled={fileIssues.length > 0}>
-                <Download /> Download JSON
+                <Download /> {m.demo.download}
               </Button>
               <Button variant="secondary" size="lg" onClick={copy}>
-                {copied ? <Check /> : <Copy />} {copied ? "הועתק" : "העתקה"}
+                {copied ? <Check /> : <Copy />} {copied ? m.demo.copied : m.demo.copy}
               </Button>
               {process.env.NODE_ENV === "development" && (
                 <Button variant="soft" size="lg" onClick={saveLocally} disabled={saving || fileIssues.length > 0}>
-                  <Save /> {saving ? "שומר…" : "שמירה בתיקיית הפרויקט"}
+                  <Save /> {saving ? m.demo.savingLocal : m.demo.saveLocal}
                 </Button>
               )}
             </div>
             {process.env.NODE_ENV === "development" && (
-              <p className="mt-2 text-xs text-ink-3">כפתור השמירה מופיע רק בפיתוח מקומי, ורק ממחשב זה.</p>
+              <p className="mt-2 text-xs text-ink-3">{m.demo.devNote}</p>
             )}
             {devMessage && (
               <p role="status" className={cn("mt-4 text-sm font-medium", devMessage.ok ? "text-leaf-700" : "text-need-700")}>
@@ -811,16 +813,19 @@ export function ProjectWizard({
 
             <ol className="mt-10 space-y-3 rounded-3xl bg-paper-2/80 p-6 text-[0.95rem] leading-relaxed text-ink-2">
               <li>
-                <strong className="text-ink">1.</strong> הניחו את הקובץ בתיקייה{" "}
+                <strong className="text-ink">1.</strong> {m.demo.step1}{" "}
                 <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">/data/projects/</code>
               </li>
               <li>
-                <strong className="text-ink">2.</strong> ייבאו אותו למסד הנתונים עם{" "}
-                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">npm run db:seed</code>. אפשר לערוך את הקובץ קודם, ולשנות{" "}
-                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">review_status</code> ל-<code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">pending_review</code> כדי שהמיזם לא יופיע עדיין.
+                <strong className="text-ink">2.</strong> {m.demo.step2A}{" "}
+                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">npm run db:seed</code>
+                {m.demo.step2B}{" "}
+                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">review_status</code>
+                {m.demo.step2To}
+                <code dir="ltr" className="rounded bg-white/80 px-1.5 py-0.5 text-xs">pending_review</code> {m.demo.step2C}
               </li>
               <li>
-                <strong className="text-ink">3.</strong> החממה תזהה את הצרכים וההצעות שלכם ותציע חיבורים.
+                <strong className="text-ink">3.</strong> {m.demo.step3}
               </li>
             </ol>
           </section>
@@ -830,33 +835,33 @@ export function ProjectWizard({
         <div className="mt-12 flex items-center justify-between gap-3 border-t border-line-2 pt-6">
           {stepIndex > 0 ? (
             <Button variant="ghost" onClick={back}>
-              <ArrowRight /> הקודם
+              <PrevArrow /> {m.nav.back}
             </Button>
           ) : (
             <Link href={editing ? `/projects/${editSlug}` : "/projects"} className={buttonVariants({ variant: "ghost" })}>
-              ביטול
+              {m.nav.cancel}
             </Link>
           )}
           {!isLast ? (
             <Button size="lg" onClick={next}>
-              הבא <ArrowLeft />
+              {m.nav.next} <NextArrow />
             </Button>
           ) : editing ? null : (
             <Button variant="ghost" onClick={() => { setDraft(emptyDraft()); setStepIndex(0); }}>
-              להתחיל מחדש
+              {m.nav.restart}
             </Button>
           )}
         </div>
       </div>
 
       {/* live preview */}
-      <aside aria-label="תצוגה מקדימה" className="hidden lg:block">
+      <aside aria-label={m.preview.aria} className="hidden lg:block">
         <div className="sticky top-28">
-          <p className="mb-3 text-xs font-semibold tracking-wide text-ink-3">כך המיזם ייראה בפורטל</p>
+          <p className="mb-3 text-xs font-semibold tracking-wide text-ink-3">{m.preview.title}</p>
           <div className="pointer-events-none select-none" aria-hidden="true">
             <ProjectCard project={previewProject} />
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-ink-3">התצוגה מתעדכנת תוך כדי הקלדה.</p>
+          <p className="mt-3 text-xs leading-relaxed text-ink-3">{m.preview.note}</p>
         </div>
       </aside>
     </div>

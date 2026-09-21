@@ -1,4 +1,7 @@
+"use client";
+
 import { CircleDashed } from "lucide-react";
+import { useLocale, useMessages } from "@/components/LocaleProvider";
 import { TypeIcon } from "@/components/TypeIcon";
 import { shortLabel, t } from "@/lib/locale";
 import { exchangeType } from "@/lib/taxonomy";
@@ -18,8 +21,10 @@ interface NeedBadgeProps {
  * (Its sibling, OfferBadge, is teal and solid — something ready to give.)
  */
 export function NeedBadge({ need, variant = "block", showDescription = false, className }: NeedBadgeProps) {
+  const locale = useLocale();
+  const m = useMessages().common;
   const type = exchangeType(need.type);
-  const title = shortLabel(need);
+  const title = shortLabel(need, locale);
 
   if (variant === "chip") {
     return (
@@ -30,7 +35,7 @@ export function NeedBadge({ need, variant = "block", showDescription = false, cl
         )}
       >
         <CircleDashed className="size-3.5" aria-hidden="true" />
-        <span>Need</span>
+        <span>{m.needChip}</span>
         <span className="text-need-700/50">·</span>
         <span className="max-w-[16rem] truncate">{title}</span>
       </span>
@@ -42,18 +47,22 @@ export function NeedBadge({ need, variant = "block", showDescription = false, cl
       <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-need-700">
         <span className="inline-flex items-center gap-1.5">
           <CircleDashed className="size-3.5" aria-hidden="true" />
-          <span>צורך</span>
-          <span className="text-need-700/50">·</span>
-          <span dir="ltr">Need</span>
+          <span>{m.need}</span>
+          {m.needAlt && (
+            <>
+              <span className="text-need-700/50">·</span>
+              <span dir="ltr">{m.needAlt}</span>
+            </>
+          )}
         </span>
         <span className="inline-flex items-center gap-1 rounded-full bg-need-100 px-2 py-0.5 text-[0.7rem]">
           <TypeIcon type={need.type} className="size-3" />
-          {type.he}
+          {type[locale]}
         </span>
       </div>
       <p className="font-medium leading-snug text-ink">{title}</p>
-      {showDescription && t(need.description) !== title && (
-        <p className="mt-2 text-sm leading-relaxed text-ink-2">{t(need.description)}</p>
+      {showDescription && t(need.description, locale) !== title && (
+        <p className="mt-2 text-sm leading-relaxed text-ink-2">{t(need.description, locale)}</p>
       )}
     </div>
   );
