@@ -10,7 +10,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Anyone can fill in the wizard. Publishing needs an account: a visitor is sent to sign in at that moment
- * and comes back to /projects/new?resume=1, where the draft that waited in their browser is submitted.
+ * and comes back to /projects/new?resume=1, where the draft that waited in their browser is submitted. Automatic
+ * translation needs an account too; that sign-in comes back to ?resume=translate.
  */
 export default async function NewProjectPage({
   searchParams,
@@ -21,6 +22,8 @@ export default async function NewProjectPage({
   const m = (await getMessages()).newProject;
   const persist = isSupabaseConfigured();
   const signedIn = Boolean(await getCurrentUser());
+  // After signing in: "1" publishes the waiting draft, "translate" reopens it at the translation step.
+  const resume = !persist ? undefined : sp.resume === "1" ? "publish" : sp.resume === "translate" ? "translate" : undefined;
 
   return (
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
@@ -28,7 +31,7 @@ export default async function NewProjectPage({
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">{m.eyebrow}</p>
         <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">{m.title}</h1>
       </header>
-      <ProjectWizard persist={persist} signedIn={signedIn} resume={persist && sp.resume === "1"} />
+      <ProjectWizard persist={persist} signedIn={signedIn} resume={resume} />
     </div>
   );
 }

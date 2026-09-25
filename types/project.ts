@@ -4,6 +4,7 @@ import type {
   geographyScopeSchema,
   lifecycleStageSchema,
   localizedTextSchema,
+  machineMarkSchema,
   needSchema,
   offerSchema,
   projectFileSchema,
@@ -13,6 +14,7 @@ import type {
 
 /** Types are derived from the Zod schema so the two can never drift apart. */
 export type LocalizedText = z.infer<typeof localizedTextSchema>;
+export type MachineMark = z.infer<typeof machineMarkSchema>;
 export type LifecycleStage = z.infer<typeof lifecycleStageSchema>;
 export type ActivityStatus = z.infer<typeof activityStatusSchema>;
 export type GeographyScope = z.infer<typeof geographyScopeSchema>;

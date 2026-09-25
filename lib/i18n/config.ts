@@ -11,9 +11,10 @@ export const DEFAULT_LOCALE: Locale = "he";
 /** Remembers the visitor's choice for the next visit (set by the proxy whenever a localized URL is served). */
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
-export const LOCALE_META: Record<Locale, { name: string; dir: "rtl" | "ltr"; dateLocale: string }> = {
-  he: { name: "עברית", dir: "rtl", dateLocale: "he-IL" },
-  en: { name: "English", dir: "ltr", dateLocale: "en-GB" },
+/** `englishName` is how the language is named to the translation model (lib/translation.ts). */
+export const LOCALE_META: Record<Locale, { name: string; englishName: string; dir: "rtl" | "ltr"; dateLocale: string }> = {
+  he: { name: "עברית", englishName: "Hebrew", dir: "rtl", dateLocale: "he-IL" },
+  en: { name: "English", englishName: "English", dir: "ltr", dateLocale: "en-GB" },
 };
 
 export function hasLocale(value: unknown): value is Locale {

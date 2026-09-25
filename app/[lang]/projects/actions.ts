@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { actionLocale, actionMessages } from "@/lib/i18n/action-locale";
+import { LOCALES } from "@/lib/i18n/config";
 import {
   needToRow,
   needUpdate,
@@ -16,6 +18,13 @@ import { projectSchema } from "@/lib/schema";
 import type { ClaimState, CreateProjectResult, SaveProjectResult } from "@/lib/stewardship";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  TRANSLATION_LIMITS,
+  allowTranslation,
+  isTranslationConfigured,
+  translateItems,
+  type TranslateResult,
+} from "@/lib/translation";
 import { applyDraft, draftSchema, validateStep, type StepId } from "@/lib/wizard";
 import { prepareNewProject } from "@/lib/wizard-server";
 import type { Need, Offer } from "@/types/project";
@@ -213,4 +222,52 @@ async function syncItems<T extends Need | Offer>(
     const { error } = await supabase.from(table).delete().in("id", removed);
     if (error) throw new Error(`${table} delete: ${error.message}`);
   }
+}
+
+const translateRequestSchema = z
+  .object({
+    from: z.enum(LOCALES),
+    to: z.enum(LOCALES),
+    name: z.string().max(200),
+    items: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(TRANSLATION_LIMITS.idLength),
+          text: z.string().trim().min(1).max(TRANSLATION_LIMITS.textLength),
+        }),
+      )
+      .min(1)
+      .max(TRANSLATION_LIMITS.items),
+  })
+  .refine((r) => r.from !== r.to)
+  .refine((r) => r.items.reduce((sum, item) => sum + item.text.length, 0) <= TRANSLATION_LIMITS.totalLength);
+
+/**
+ * Translate an initiative's texts from one language to another (the wizard's "translate" buttons).
+ * Nothing is saved here: the translation goes back to the wizard, where the person reviews and edits it,
+ * and it is stored only with the rest of the draft.
+ *
+ * The call costs money and carries the server's OpenAI key, so it needs a signed-in person (or, in demo
+ * mode without accounts, local development) and is rate-limited per person.
+ */
+export async function translateTexts(rawRequest: unknown): Promise<TranslateResult> {
+  const request = translateRequestSchema.safeParse(rawRequest);
+  if (!request.success) return { status: "error", reason: "invalid" };
+  if (!isTranslationConfigured()) return { status: "error", reason: "unavailable" };
+
+  let who: string;
+  if (isSupabaseConfigured()) {
+    const user = await getCurrentUser();
+    if (!user) return { status: "auth_required" };
+    who = user.id;
+  } else if (process.env.NODE_ENV === "development") {
+    who = "local-development";
+  } else {
+    return { status: "error", reason: "unavailable" };
+  }
+  if (!allowTranslation(who)) return { status: "error", reason: "rate_limited" };
+
+  const outcome = await translateItems(request.data);
+  if (!outcome.ok) return { status: "error", reason: outcome.reason === "unconfigured" ? "unavailable" : "failed" };
+  return { status: "ok", items: outcome.items, at: new Date().toISOString() };
 }

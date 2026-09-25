@@ -7,6 +7,7 @@ import { Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Sprout,
 import { NextArrow, PrevArrow } from "@/components/Arrows";
 import { createProject, saveProjectEdits } from "@/app/[lang]/projects/actions";
 import { ProjectCard } from "@/components/ProjectCard";
+import { TranslationStep } from "@/components/TranslationStep";
 import { TypeIcon } from "@/components/TypeIcon";
 import { useLocale, useLocalePath, useMessages } from "@/components/LocaleProvider";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -21,10 +22,13 @@ import {
   ACTIVITY_STATUS,
 } from "@/lib/taxonomy";
 import {
+  DRAFT_TEXT_FIELDS,
   STEP_IDS,
   buildProject,
   buildProjectFile,
+  clearMarks,
   emptyDraft,
+  itemTextKey,
   newItem,
   slugify,
   validateFile,
@@ -33,6 +37,7 @@ import {
   type ItemDraft,
   type StepId,
 } from "@/lib/wizard";
+import { LOCALES } from "@/lib/i18n/config";
 import { fmt } from "@/lib/i18n/format";
 import { loginUrl } from "@/lib/next-path";
 import { forgetProjectDraft, rememberProjectDraft, takeProjectDraft } from "@/lib/project-draft";
@@ -222,8 +227,11 @@ interface ProjectWizardProps {
   persist?: boolean;
   /** Create mode: whether the visitor is already signed in (only changes the wording; the server decides). */
   signedIn?: boolean;
-  /** Create mode: the visitor is back from signing in — submit the draft that waited in this browser. */
-  resume?: boolean;
+  /**
+   * Create mode: the visitor is back from signing in, and the draft that waited in this browser is picked up —
+   * "publish" submits it, "translate" reopens it at the translation step.
+   */
+  resume?: "publish" | "translate";
 }
 
 export function ProjectWizard({
@@ -232,7 +240,7 @@ export function ProjectWizard({
   slug: editSlug,
   persist = false,
   signedIn = false,
-  resume = false,
+  resume,
 }: ProjectWizardProps) {
   const editing = mode === "edit" && Boolean(editSlug);
   const router = useRouter();
@@ -248,15 +256,23 @@ export function ProjectWizard({
   const [copied, setCopied] = useState(false);
   const [devMessage, setDevMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [resuming, setResuming] = useState(resume);
+  const [resuming, setResuming] = useState(Boolean(resume));
   const resumeStarted = useRef(false);
 
   const step: StepId = STEP_IDS[stepIndex];
   const isLast = stepIndex === STEP_IDS.length - 1;
 
-  const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
+  // A text edited by hand is no longer an automatic translation.
+  const patch = (p: Partial<Draft>) =>
+    setDraft((d) => clearMarks({ ...d, ...p }, locale, DRAFT_TEXT_FIELDS.filter((f) => f in p)));
   const patchItem = (kind: "needs" | "offers", uid: string, p: Partial<ItemDraft>) =>
-    setDraft((d) => ({ ...d, [kind]: d[kind].map((it) => (it.uid === uid ? { ...it, ...p } : it)) }));
+    setDraft((d) =>
+      clearMarks(
+        { ...d, [kind]: d[kind].map((it) => (it.uid === uid ? { ...it, ...p } : it)) },
+        locale,
+        (["title", "description"] as const).filter((f) => f in p).map((f) => itemTextKey(kind === "needs" ? "need" : "offer", uid, f)),
+      ),
+    );
 
   const previewProject = useMemo(
     () => buildProject(draft, { name: m.preview.namePlaceholder, tagline: m.preview.taglinePlaceholder }, locale),
@@ -323,6 +339,13 @@ export function ProjectWizard({
       return;
     }
     startSaving(async () => {
+      if (resume === "translate") {
+        // Signed in now: continue at the translation step, which translates on arrival.
+        setDraft(waiting);
+        setStepIndex(STEP_IDS.indexOf("translation"));
+        setResuming(false);
+        return;
+      }
       setDraft(waiting);
       setStepIndex(STEP_IDS.length - 1);
       // On success the page navigates away, so the "saving…" notice stays until then.
@@ -331,6 +354,12 @@ export function ProjectWizard({
     // publishDraft only uses the router and state setters, which do not change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resume, router]);
+
+  /** Automatic translation needs an account: keep the draft in this browser and come back to this step. */
+  function signInToTranslate() {
+    rememberProjectDraft(draft);
+    router.push(loginUrl("/projects/new?resume=translate", locale));
+  }
 
   function next() {
     const found = validateStep(step, draft, m.errors);
@@ -397,7 +426,7 @@ export function ProjectWizard({
     return (
       <p role="status" className="flex items-center justify-center gap-3 rounded-2xl bg-leaf-50 px-5 py-4 font-medium text-leaf-900">
         <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-        {m.review.creating}
+        {resume === "translate" ? m.translation.restoring : m.review.creating}
       </p>
     );
   }
@@ -709,7 +738,20 @@ export function ProjectWizard({
           </section>
         )}
 
-        {/* 6 · REVIEW — saved to the portal: edit mode saves the changes, create mode publishes the project */}
+        {/* 6 · TRANSLATION — the same texts in the other language(s) */}
+        {step === "translation" &&
+          LOCALES.filter((l) => l !== locale).map((target) => (
+            <TranslationStep
+              key={target}
+              draft={draft}
+              onChange={setDraft}
+              target={target}
+              autoTranslate={!editing}
+              onSignIn={!editing && persist && !signedIn ? signInToTranslate : undefined}
+            />
+          ))}
+
+        {/* 7 · REVIEW — saved to the portal: edit mode saves the changes, create mode publishes the project */}
         {step === "review" && (editing || persist) && (
           <section>
             <StepIntro
@@ -763,7 +805,7 @@ export function ProjectWizard({
           </section>
         )}
 
-        {/* 6 · REVIEW — demo mode only (no database): a JSON file for the seed data */}
+        {/* 7 · REVIEW — demo mode only (no database): a JSON file for the seed data */}
         {step === "review" && !editing && !persist && (
           <section>
             <StepIntro title={m.demo.title} body={m.demo.body} />
