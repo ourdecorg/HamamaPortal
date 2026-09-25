@@ -5,6 +5,7 @@ import { Lock } from "lucide-react";
 import { PrevArrow } from "@/components/Arrows";
 import { ProjectWizard } from "@/components/ProjectWizard";
 import { buttonVariants } from "@/components/ui/button";
+import { isCurrentUserAdmin } from "@/lib/admin";
 import { requireUser } from "@/lib/auth";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { t } from "@/lib/locale";
@@ -18,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The same wizard as "add a project", filled with the stored project. Only an approved steward gets the
- * form; the server action (and Row Level Security) re-check that on save.
+ * The same wizard as "add a project", filled with the stored project. Only an approved steward (or an admin)
+ * gets the form; the server action (and Row Level Security) re-check that on save.
  */
 export default async function EditProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -33,7 +34,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ sl
   if (!found) notFound();
   const { project, stewardship } = found;
 
-  if (stewardship?.status !== "approved") {
+  if (stewardship?.status !== "approved" && !(await isCurrentUserAdmin())) {
     return (
       <div className="page-wrap pb-10 pt-16">
         <div className="mx-auto max-w-xl rounded-[2rem] border border-line bg-white/80 p-8 text-center shadow-soft">

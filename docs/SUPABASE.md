@@ -18,13 +18,13 @@ Browser ──► Railway: Next.js (server components + server actions) ──�
 
 1. Create a project at <https://supabase.com/dashboard>.
 2. Apply the migrations **in order** — either:
-   - **SQL editor:** paste and run `supabase/migrations/20260920120000_schema.sql`, then `20260920120100_rls.sql`, then `20260920130000_create_project.sql`; or
+   - **SQL editor:** paste and run `supabase/migrations/20260920120000_schema.sql`, then `20260920120100_rls.sql`, then `20260920130000_create_project.sql`, then `20260925120000_admin.sql`; or
    - **CLI:** `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase db push`.
 
-   Already running an earlier version? Only `20260920130000_create_project.sql` is new — run it (or `db push`) **before** deploying this version of the app, otherwise "publish" fails with "function not found".
+   Already running an earlier version? Run the migrations you do not have yet (or `db push`) **before** deploying this version of the app — the newest is `20260925120000_admin.sql` (admins, soft deletion). It only adds: no existing user, project or stewardship row is changed.
 3. Project Settings → API: copy the **Project URL** and the **anon / publishable key**.
 
-Tables: `profiles`, `projects`, `project_stewards`, `needs`, `offers`, `wishes`, `opportunities`.
+Tables: `profiles`, `projects`, `project_stewards`, `needs`, `offers`, `wishes`, `opportunities`, `admin_users`.
 
 ## 2. Import the demo / bootstrap projects (optional)
 
@@ -132,7 +132,45 @@ update public.project_stewards
 
 Approved stewards get **עריכת המיזם** (the same wizard as "add a project", pre-filled): project details, activity status, Needs and Offers. They cannot change the slug, visibility, review status or demo flag.
 
-## 7. Local development
+## 7. Administrators and the admin area
+
+The portal has an admin area at **`/admin`** (overview), **`/admin/projects`** (every initiative: search, filter, edit in both languages with automatic translation, publication state, delete / restore) and **`/admin/admins`** (who is an admin; add and revoke). Only active admins see the *ניהול / Admin* link in the header; anyone else gets a 404 there.
+
+**Who is an admin lives in the database** — table `public.admin_users` (one row per grant: `user_id`, `granted_at`, `granted_by`, `revoked_at`, `revoked_by`). A person is an admin exactly while they have a row with `revoked_at is null`. Nothing in the app code or environment decides it.
+
+- **Enforced by the database.** Every admin operation is a `SECURITY DEFINER` function that checks `public.is_admin()` for the caller's own session (`admin_grant`, `admin_revoke`, `admin_list`, `admin_search_users`, `admin_set_project_state`, `admin_delete_project`, `admin_restore_project`). The app checks too, but calling the actions or the database directly gets a non-admin nothing (`42501`). The app never has the service-role key.
+- **Immediate.** Admin status is read from the table on every request, so a revoked admin loses access on their next request.
+- **Never zero admins.** Revoking (yourself or anyone) is refused when it would leave no active admin. A trigger enforces this for every connection — the app, the CLI and the SQL editor — and revocations are serialised, so two admins cannot revoke each other at the same moment.
+- **Traceable.** Grants are revoked, not deleted: `admin_users` is the history of who granted and who revoked whose access, and when (shown under *Access history* in `/admin/admins`).
+- **Adding an admin** is choosing a registered person (search by email or name). The person must have signed in once. Accounts are never created or deleted here.
+- **Deleting a project is a soft delete** (`projects.deleted_at` / `deleted_by`): the project, its needs and offers disappear for visitors and for its stewards (who can no longer edit it) and from matching, but no row is destroyed — stewardships, opportunities and the slug stay, and an admin can restore it. The admin must type the project's slug to confirm; the server checks it.
+- Admins edit any project's content through the same wizard and the same save action as stewards; Row Level Security allows it with the same column grants. Publication state (`review_status`, `visibility`) is changed only through `admin_set_project_state`.
+
+### The first admin (bootstrap)
+
+There is deliberately no web page or endpoint that can make someone an admin. Create the first one from a trusted machine:
+
+1. Sign in to the portal once with the account that should become admin (so it exists in Supabase Auth).
+2. With `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` (never on Railway):
+
+   ```bash
+   npm run admin -- --grant --email you@example.com
+   npm run admin                                      # list admins (active and revoked)
+   npm run admin -- --revoke --email someone@example.com
+   ```
+
+   …or in the Supabase SQL editor:
+
+   ```sql
+   insert into public.admin_users (user_id)
+   select id from auth.users where email = 'you@example.com';
+   ```
+
+3. Reload the portal: *Admin* appears in the header. From then on, admins add each other at `/admin/admins`.
+
+Grants made this way are recorded with `granted_by = null` and shown as *initial setup*.
+
+## 8. Local development
 
 ```bash
 npm install
@@ -142,7 +180,7 @@ npm run dev                  # http://localhost:3000
 
 Without `.env.local` the app runs in demo mode, exactly like before.
 
-## 8. Tests
+## 9. Tests
 
 ```bash
 npm test          # everything below
@@ -150,13 +188,14 @@ npm run test:rls     # runs the real migrations in an in-process Postgres (PGlit
 npm run test:seed    # the seed import against real Postgres: fits the schema, idempotent, read-back is lossless
 npm run test:mapper  # JSON → rows → project round trip for every seed file; wizard edit merge
 npm run test:create  # creating a project from the wizard: ownership, RLS, slugs, atomicity, matching, draft handoff
+npm run test:admin   # admins: DB-enforced checks, grant/revoke, never zero admins, project admin, soft delete
 ```
 
 `test:create` runs the real `create_project` function in the same in-process Postgres: anonymous callers are refused; the creator becomes approved owner; a second user cannot edit but can request stewardship (pending); a same-name project gets the next free slug and never overwrites; a failure in the last write leaves no project, steward, need or offer behind; the new Needs/Offers produce connections at once; and the draft survives the sign-in round trip (store → restore → create).
 
 Not covered by automated tests: a live Supabase project, Google OAuth and the browser redirect (they need your credentials and a browser). Verify those with the steps below.
 
-## 9. Acceptance checks (manual, against your Supabase)
+## 10. Acceptance checks (manual, against your Supabase)
 
 1. **Wish.** Signed out: open `/wishes`, write a wish, *Find connections* → results appear. Press **שמירת המשאלה** → you are sent to sign in → after signing in the wish is saved and `/my-space` opens with it, its status and matching projects (Table editor → `wishes`: private, `open`, `interpretation` filled).
 2. **Steward.** Signed in, open a project, press **אני מטפח/ת את המיזם הזה** → `project_stewards` has a `pending` row. Approve it (section 6). Open **עריכת המיזם**, change a Need, save → `needs` row updated, the public page shows it, and `/connections` reflects it.

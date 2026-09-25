@@ -13,8 +13,10 @@
     "test:rls": "tsx --test tests/rls.test.ts",
     "test:create": "tsx --test tests/create-project.test.ts",
     "test:mapper": "tsx --test tests/mapper.test.ts",
+    "test:admin": "tsx --test tests/admin.test.ts",
     "db:seed": "tsx scripts/seed.ts",
     "steward:approve": "tsx scripts/approve-steward.ts",
+    "admin": "tsx scripts/admin.ts",
     "test:seed": "tsx --test tests/seed.test.ts"
   },
   "dependencies": {

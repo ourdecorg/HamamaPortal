@@ -48,7 +48,9 @@ export async function listMyStewardships(): Promise<(MyStewardship & { project: 
   if (error) throw new Error(`Could not load your projects: ${error.message}`);
 
   const out: (MyStewardship & { project: Project })[] = [];
-  for (const row of (data ?? []) as unknown as (MyStewardship & { project: ProjectWithItems | null })[]) {
+  for (const row of (data ?? []) as unknown as (MyStewardship & { project: (ProjectWithItems & { deleted_at?: string | null }) | null })[]) {
+    // Admins can read deleted projects (to restore them); they do not belong in anyone's own list.
+    if (row.project?.deleted_at) continue;
     const project = row.project ? parseProjectRow(row.project) : null;
     if (project) out.push({ role: row.role, status: row.status, project });
   }
