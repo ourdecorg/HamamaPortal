@@ -220,6 +220,8 @@ interface ProjectWizardProps {
   initialDraft?: Draft;
   /** Edit mode: the project being edited. Its slug (and so its URL) cannot change. */
   slug?: string;
+  /** Edit mode: where saving (or cancelling) leads. Default: the project's page. */
+  doneHref?: string;
   /**
    * Create mode with a database: "publish" writes the project straight to Supabase.
    * Without one (demo mode) the last step offers the JSON file instead.
@@ -238,6 +240,7 @@ export function ProjectWizard({
   mode = "create",
   initialDraft,
   slug: editSlug,
+  doneHref,
   persist = false,
   signedIn = false,
   resume,
@@ -282,16 +285,17 @@ export function ProjectWizard({
   const fileIssues = useMemo(() => (isLast ? validateFile(file) : []), [file, isLast]);
   const json = useMemo(() => JSON.stringify(file, null, 2), [file]);
   const slug = editing ? editSlug! : draft.slug || slugify(draft.name);
+  const doneLink = doneHref ?? `/projects/${editSlug}`;
 
   function saveEdits() {
     setSaveState(null);
     startSaving(async () => {
       const res = await saveProjectEdits(editSlug!, draft, locale);
       if (res.status === "saved") {
-        router.push(lp(`/projects/${editSlug}`));
+        router.push(lp(doneLink));
         router.refresh();
       } else if (res.status === "auth_required") {
-        router.push(loginUrl(`/projects/${editSlug}/edit`, locale));
+        router.push(loginUrl(doneHref ? doneHref : `/projects/${editSlug}/edit`, locale));
       } else if (res.status === "forbidden") {
         setSaveState({ ok: false, text: m.review.forbidden });
       } else {
@@ -791,7 +795,7 @@ export function ProjectWizard({
                 {editing ? (saving_ ? m.review.saving : m.review.save) : saving_ ? m.review.publishing : m.review.publish}
               </Button>
               {editing && (
-                <Link href={`/projects/${editSlug}`} className={buttonVariants({ variant: "ghost", size: "lg" })}>
+                <Link href={doneLink} className={buttonVariants({ variant: "ghost", size: "lg" })}>
                   {m.review.cancel}
                 </Link>
               )}
@@ -880,7 +884,7 @@ export function ProjectWizard({
               <PrevArrow /> {m.nav.back}
             </Button>
           ) : (
-            <Link href={editing ? `/projects/${editSlug}` : "/projects"} className={buttonVariants({ variant: "ghost" })}>
+            <Link href={editing ? doneLink : "/projects"} className={buttonVariants({ variant: "ghost" })}>
               {m.nav.cancel}
             </Link>
           )}

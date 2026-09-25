@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { isCurrentUserAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
 import { actionLocale, actionMessages } from "@/lib/i18n/action-locale";
 import { LOCALES } from "@/lib/i18n/config";
@@ -117,10 +118,10 @@ export async function withdrawClaim(slug: string): Promise<void> {
 }
 
 /**
- * Save a steward's edits: project details, activity status, Needs and Offers.
+ * Save a steward's (or an admin's) edits: project details in every language, activity status, Needs and Offers.
  *
- * Authorisation is enforced twice: here (an approved stewardship for the session user) and by Row Level
- * Security on every statement below, which runs with the user's own JWT. The client only sends the wizard
+ * Authorisation is enforced twice: here (an approved stewardship for the session user, or active admin status
+ * in the database) and by Row Level Security on every statement below, which runs with the user's own JWT. The client only sends the wizard
  * draft; identity, slug and moderation state are never taken from it.
  */
 export async function saveProjectEdits(slug: string, rawDraft: unknown, localeArg: string): Promise<SaveProjectResult> {
@@ -151,7 +152,7 @@ export async function saveProjectEdits(slug: string, rawDraft: unknown, localeAr
     .eq("user_id", user.id)
     .eq("status", "approved")
     .maybeSingle();
-  if (!steward) return { status: "forbidden" };
+  if (!steward && !(await isCurrentUserAdmin())) return { status: "forbidden" };
 
   // The edited texts are written into the language of the page the steward is editing on; other languages stay.
   const next = projectSchema.safeParse(applyDraft(original, draft.data, locale));

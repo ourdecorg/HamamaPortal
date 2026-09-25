@@ -1,7 +1,8 @@
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { Link } from "@/components/LocaleLink";
 import { buttonVariants } from "@/components/ui/button";
+import { isCurrentUserAdmin } from "@/lib/admin";
 import { displayNameOf, getCurrentUser } from "@/lib/auth";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -9,7 +10,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * The account corner of the header (a Server Component, rendered into SiteHeader's slot).
- * Visitors see "Sign in"; signed-in people see their space and a sign-out button.
+ * Visitors see "Sign in"; signed-in people see their space and a sign-out button, and active admins (as the
+ * database says, on this request) also see the admin area.
  * Nothing is shown when Supabase is not configured (demo mode).
  */
 export async function AccountMenu() {
@@ -25,8 +27,16 @@ export async function AccountMenu() {
       </Link>
     );
   }
+  const admin = await isCurrentUserAdmin();
   return (
     <div className="flex items-center gap-1">
+      {admin && (
+        <Link href="/admin" title={m.admin} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "!px-3")}>
+          <ShieldCheck aria-hidden="true" />
+          <span className="hidden lg:inline">{m.admin}</span>
+          <span className="sr-only lg:hidden">{m.admin}</span>
+        </Link>
+      )}
       <Link
         href="/my-space"
         title={displayNameOf(user, m.fallbackName)}

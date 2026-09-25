@@ -66,6 +66,10 @@ A malformed record (failed validation) is **skipped and reported**, never fatal.
 
 In `npm run dev` only, the wizard also has a **save to project folder** button (it writes the JSON file; run the seed afterwards). The route (`app/api/projects/route.ts`) returns 404 outside development, accepts localhost only, refuses cross-origin requests, validates with the same Zod schema, derives the file name from the validated slug, and never overwrites an existing file.
 
+### Admin area (`/admin`)
+
+Active admins manage every initiative (search, filter, edit both languages with automatic translation, publication state, soft delete / restore) and the list of admins. Admin status lives in the database (`public.admin_users`) and every privileged operation is enforced there; the system never ends up with zero admins. The first admin is created from a trusted machine with `npm run admin -- --grant --email you@example.com` — see [docs/SUPABASE.md §7](docs/SUPABASE.md#7-administrators-and-the-admin-area).
+
 ### The connection engine (`lib/matching.ts`)
 
 Deterministic and readable. For every open **need** of project A and every **offer** of project B:
