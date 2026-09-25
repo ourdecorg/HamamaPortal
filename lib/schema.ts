@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LOCALES } from "@/lib/i18n/config";
 
 /**
  * Zod schema for one project file under /data/projects/.
@@ -19,6 +20,11 @@ const key = z
   .trim()
   .regex(/^[a-z][a-z0-9_]*$/, "expected a snake_case key");
 
+const localeSchema = z.enum(LOCALES);
+
+/** A text that is still exactly what the automatic translation produced: from which language, and when. */
+export const machineMarkSchema = z.object({ from: localeSchema, at: z.iso.datetime() });
+
 export const localizedTextSchema = z
   .object({
     default: z.string().optional(),
@@ -28,6 +34,11 @@ export const localizedTextSchema = z
         en: z.string().optional(),
       })
       .default({}),
+    /**
+     * Optional: which translations are unedited automatic translations (language → source + time).
+     * A language is dropped from here as soon as someone edits its text by hand.
+     */
+    machine: z.partialRecord(localeSchema, machineMarkSchema).optional(),
   })
   .refine(
     (v) => Boolean(v.default?.trim() || v.translations.he?.trim() || v.translations.en?.trim()),
