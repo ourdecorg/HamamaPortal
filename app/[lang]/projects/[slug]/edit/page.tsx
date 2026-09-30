@@ -7,6 +7,7 @@ import { ProjectWizard } from "@/components/ProjectWizard";
 import { buttonVariants } from "@/components/ui/button";
 import { isCurrentUserAdmin } from "@/lib/admin";
 import { requireUser } from "@/lib/auth";
+import { getProjectContactEmails } from "@/lib/contacts";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { t } from "@/lib/locale";
 import { getProjectForEditing } from "@/lib/stewardship";
@@ -51,6 +52,8 @@ export default async function EditProjectPage({ params }: { params: Promise<{ sl
     );
   }
 
+  const emails = await getProjectContactEmails(project.id);
+
   return (
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
       <header className="mb-12 max-w-2xl">
@@ -60,7 +63,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ sl
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">{messages.newProject.editEyebrow}</p>
         <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">{t(project.name, locale)}</h1>
       </header>
-      <ProjectWizard mode="edit" slug={slug} initialDraft={draftFromProject(project, locale)} />
+      <ProjectWizard mode="edit" slug={slug} initialDraft={draftFromProject(project, locale, emails)} />
     </div>
   );
 }

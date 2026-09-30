@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isCurrentUserAdmin } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
+import { getProjectContactEmails } from "@/lib/contacts";
 import { actionLocale, actionMessages } from "@/lib/i18n/action-locale";
 import { LOCALES } from "@/lib/i18n/config";
+import { sendMailSoon } from "@/lib/mail/schedule";
 import {
   needToRow,
   needUpdate,
@@ -13,6 +15,7 @@ import {
   offerUpdate,
   parseProjectRow,
   projectContent,
+  withPersonIds,
   type ProjectWithItems,
 } from "@/lib/project-mapper";
 import { projectSchema } from "@/lib/schema";
@@ -26,7 +29,7 @@ import {
   translateItems,
   type TranslateResult,
 } from "@/lib/translation";
-import { applyDraft, draftSchema, validateStep, type StepId } from "@/lib/wizard";
+import { applyDraft, draftContacts, draftSchema, validateStep, type Draft, type StepId } from "@/lib/wizard";
 import { prepareNewProject } from "@/lib/wizard-server";
 import type { Need, Offer } from "@/types/project";
 
@@ -73,6 +76,8 @@ export async function createProject(rawDraft: unknown, localeArg: string): Promi
     return { status: "error", error: m.createFailedShort };
   }
 
+  // The team members were queued a note that they were added.
+  await sendMailSoon();
   refresh();
   return { status: "created", slug };
 }
@@ -132,12 +137,8 @@ export async function saveProjectEdits(slug: string, rawDraft: unknown, localeAr
   const user = await getCurrentUser();
   if (!user) return { status: "auth_required" };
 
-  const draft = draftSchema.safeParse(rawDraft);
-  if (!draft.success) return { status: "error", error: messages.wizard.errors.invalidDraft };
-  for (const step of ["identity", "intent", "details"] as StepId[]) {
-    const problems = Object.values(validateStep(step, { ...draft.data, slug }, messages.wizard.errors));
-    if (problems.length) return { status: "error", error: problems[0] };
-  }
+  const parsed = draftSchema.safeParse(rawDraft);
+  if (!parsed.success) return { status: "error", error: messages.wizard.errors.invalidDraft };
 
   const supabase = await createSupabaseServerClient();
   const { data: row } = await supabase.from("projects").select("*, needs(*), offers(*)").eq("slug", slug).maybeSingle();
@@ -153,6 +154,27 @@ export async function saveProjectEdits(slug: string, rawDraft: unknown, localeAr
     .eq("status", "approved")
     .maybeSingle();
   if (!steward && !(await isCurrentUserAdmin())) return { status: "forbidden" };
+
+  // Only people already on the stored team, with no stored email, may stay without one (the browser's
+  // `emailOptional` flag is display only).
+  let storedEmails: Record<string, string>;
+  try {
+    storedEmails = await getProjectContactEmails(original.id);
+  } catch (err) {
+    console.error("[hamama] saveProjectEdits (contacts):", err);
+    return { status: "error", error: m.readFailed };
+  }
+  const storedIds = new Set(withPersonIds(original.people.stewards).map((s) => s.id));
+  const draft: { data: Draft } = {
+    data: {
+      ...parsed.data,
+      people: parsed.data.people.map((person) => ({ ...person, emailOptional: storedIds.has(person.id) && !storedEmails[person.id] })),
+    },
+  };
+  for (const step of ["identity", "intent", "details"] as StepId[]) {
+    const problems = Object.values(validateStep(step, { ...draft.data, slug }, messages.wizard.errors));
+    if (problems.length) return { status: "error", error: problems[0] };
+  }
 
   // The edited texts are written into the language of the page the steward is editing on; other languages stay.
   const next = projectSchema.safeParse(applyDraft(original, draft.data, locale));
@@ -184,6 +206,18 @@ export async function saveProjectEdits(slug: string, rawDraft: unknown, localeAr
     return { status: "error", error: m.itemsFailed };
   }
 
+  // 3. The team's private emails (new or changed addresses are queued a note that they were added).
+  const { error: contactsError } = await supabase.rpc("set_project_contacts", {
+    p_project_id: original.id,
+    p_contacts: draftContacts(draft.data),
+    p_locale: locale,
+  });
+  if (contactsError) {
+    console.error("[hamama] saveProjectEdits (contacts):", contactsError.code, contactsError.message);
+    return { status: "error", error: m.contactsFailed };
+  }
+
+  await sendMailSoon();
   refresh();
   return { status: "saved" };
 }

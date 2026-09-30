@@ -3,7 +3,7 @@
 import { Link } from "@/components/LocaleLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { Check, CircleDashed, Copy, Download, Gift, Loader2, Plus, Save, Sprout, Trash2 } from "lucide-react";
+import { Check, CircleDashed, Copy, Download, Gift, Loader2, Lock, Plus, Save, Sprout, Trash2, UserRound } from "lucide-react";
 import { NextArrow, PrevArrow } from "@/components/Arrows";
 import { createProject, saveProjectEdits } from "@/app/[lang]/projects/actions";
 import { ProjectCard } from "@/components/ProjectCard";
@@ -30,11 +30,14 @@ import {
   emptyDraft,
   itemTextKey,
   newItem,
+  newPerson,
+  personTextKey,
   slugify,
   validateFile,
   validateStep,
   type Draft,
   type ItemDraft,
+  type PersonDraft,
   type StepId,
 } from "@/lib/wizard";
 import { LOCALES } from "@/lib/i18n/config";
@@ -212,6 +215,75 @@ function ItemEditor({
   );
 }
 
+// ------------------------------------------------------------- team list ----
+
+function PersonEditor({
+  person,
+  index,
+  errors,
+  onChange,
+  onRemove,
+}: {
+  person: PersonDraft;
+  index: number;
+  errors: Record<string, string>;
+  onChange: (patch: Partial<PersonDraft>) => void;
+  onRemove: () => void;
+}) {
+  const messages = useMessages();
+  const m = messages.wizard.details;
+  const id = (field: string) => `${person.uid}-${field}`;
+
+  return (
+    <fieldset className="rounded-[1.75rem] border border-line-2 bg-white/70 p-5 sm:p-6">
+      <legend className="flex items-center gap-2 px-2 text-sm font-semibold text-leaf-700">
+        <UserRound className="size-4" aria-hidden="true" />
+        {fmt(m.person, { n: index + 1 })}
+      </legend>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <Label htmlFor={id("name")}>{m.personName}</Label>
+          <Input id={id("name")} value={person.name} onChange={(e) => onChange({ name: e.target.value })} placeholder={m.personNamePh} />
+          <FieldError message={errors[`person:${person.uid}:name`]} />
+        </div>
+        <div>
+          <Label htmlFor={id("role")} hint={messages.wish.optional}>
+            {m.role}
+          </Label>
+          <Input id={id("role")} value={person.role} onChange={(e) => onChange({ role: e.target.value })} placeholder={m.rolePh} />
+        </div>
+        <div className="sm:col-span-2">
+          <Label htmlFor={id("email")}>
+            <span className="inline-flex items-center gap-1.5">
+              {m.personEmail}
+              <Lock className="size-3.5 text-ink-3" aria-hidden="true" />
+            </span>
+          </Label>
+          <Input
+            id={id("email")}
+            type="email"
+            dir="ltr"
+            autoComplete="off"
+            value={person.email}
+            onChange={(e) => onChange({ email: e.target.value })}
+            placeholder={m.personEmailPh}
+            className="text-start"
+          />
+          {person.emailOptional && !person.email.trim() && <Hint>{m.personEmailOptional}</Hint>}
+          <FieldError message={errors[`person:${person.uid}:email`]} />
+        </div>
+      </div>
+
+      <div className="mt-5 flex justify-end">
+        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+          <Trash2 /> {m.removePerson}
+        </Button>
+      </div>
+    </fieldset>
+  );
+}
+
 // ----------------------------------------------------------------- wizard ----
 
 interface ProjectWizardProps {
@@ -229,6 +301,8 @@ interface ProjectWizardProps {
   persist?: boolean;
   /** Create mode: whether the visitor is already signed in (only changes the wording; the server decides). */
   signedIn?: boolean;
+  /** Create mode, signed in: the first team member starts as the visitor (they can change it). */
+  me?: { name: string; email: string };
   /**
    * Create mode: the visitor is back from signing in, and the draft that waited in this browser is picked up —
    * "publish" submits it, "translate" reopens it at the translation step.
@@ -243,6 +317,7 @@ export function ProjectWizard({
   doneHref,
   persist = false,
   signedIn = false,
+  me,
   resume,
 }: ProjectWizardProps) {
   const editing = mode === "edit" && Boolean(editSlug);
@@ -251,7 +326,8 @@ export function ProjectWizard({
   const lp = useLocalePath();
   const messages = useMessages();
   const m = messages.wizard;
-  const [draft, setDraft] = useState<Draft>(initialDraft ?? emptyDraft);
+  const freshDraft = (): Draft => (me ? { ...emptyDraft(), people: [newPerson(me)] } : emptyDraft());
+  const [draft, setDraft] = useState<Draft>(initialDraft ?? freshDraft);
   const [saveState, setSaveState] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving_, startSaving] = useTransition();
   const [stepIndex, setStepIndex] = useState(0);
@@ -274,6 +350,14 @@ export function ProjectWizard({
         { ...d, [kind]: d[kind].map((it) => (it.uid === uid ? { ...it, ...p } : it)) },
         locale,
         (["title", "description"] as const).filter((f) => f in p).map((f) => itemTextKey(kind === "needs" ? "need" : "offer", uid, f)),
+      ),
+    );
+  const patchPerson = (uid: string, p: Partial<PersonDraft>) =>
+    setDraft((d) =>
+      clearMarks(
+        { ...d, people: d.people.map((person) => (person.uid === uid ? { ...person, ...p } : person)) },
+        locale,
+        "role" in p ? [personTextKey(uid)] : [],
       ),
     );
 
@@ -713,16 +797,28 @@ export function ProjectWizard({
                 </div>
               </fieldset>
 
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="steward">{m.details.steward}</Label>
-                  <Input id="steward" value={draft.steward_name} onChange={(e) => patch({ steward_name: e.target.value })} placeholder={m.details.stewardPh} />
+              <fieldset>
+                <legend className="mb-1 text-sm font-medium text-ink">{m.details.team}</legend>
+                <Hint>{m.details.teamHint}</Hint>
+                <div className="mt-4 space-y-5">
+                  {draft.people.map((person, i) => (
+                    <PersonEditor
+                      key={person.uid}
+                      person={person}
+                      index={i}
+                      errors={errors}
+                      onChange={(p) => patchPerson(person.uid, p)}
+                      onRemove={() => patch({ people: draft.people.filter((x) => x.uid !== person.uid) })}
+                    />
+                  ))}
+                  {draft.people.length < 12 && (
+                    <Button variant="secondary" onClick={() => patch({ people: [...draft.people, newPerson()] })}>
+                      <Plus /> {m.details.addPerson}
+                    </Button>
+                  )}
+                  <Hint>{m.details.noticeNote}</Hint>
                 </div>
-                <div>
-                  <Label htmlFor="steward-role">{m.details.role}</Label>
-                  <Input id="steward-role" value={draft.steward_role} onChange={(e) => patch({ steward_role: e.target.value })} placeholder={m.details.rolePh} />
-                </div>
-              </div>
+              </fieldset>
 
               <div className="grid gap-5 sm:grid-cols-3">
                 {(
@@ -893,7 +989,7 @@ export function ProjectWizard({
               {m.nav.next} <NextArrow />
             </Button>
           ) : editing ? null : (
-            <Button variant="ghost" onClick={() => { setDraft(emptyDraft()); setStepIndex(0); }}>
+            <Button variant="ghost" onClick={() => { setDraft(freshDraft()); setStepIndex(0); }}>
               {m.nav.restart}
             </Button>
           )}

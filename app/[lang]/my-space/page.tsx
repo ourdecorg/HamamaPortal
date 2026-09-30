@@ -7,8 +7,10 @@ import { withdrawClaim } from "@/app/[lang]/projects/actions";
 import { deleteWish, setWishStatus } from "@/app/[lang]/wishes/actions";
 import { NeedBadge } from "@/components/NeedBadge";
 import { DemoTag } from "@/components/ProjectCard";
+import { Correspondence } from "@/components/Correspondence";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { displayNameOf, requireUser } from "@/lib/auth";
+import { listMyConversations } from "@/lib/contacts";
 import { discover, type DiscoveryResult } from "@/lib/discovery";
 import { LOCALE_META, type Locale } from "@/lib/i18n/config";
 import { fmt } from "@/lib/i18n/format";
@@ -349,9 +351,15 @@ export default async function MySpacePage({
     );
   }
 
-  const user = await requireUser("/my-space");
   const sp = await searchParams;
-  const [wishes, opportunities, projects] = await Promise.all([listMyWishes(), listMyOpportunities(), getProjects()]);
+  const openConversation = typeof sp.conversation === "string" && /^[0-9a-f-]{36}$/i.test(sp.conversation) ? sp.conversation : undefined;
+  const user = await requireUser(openConversation ? `/my-space?conversation=${openConversation}` : "/my-space");
+  const [wishes, opportunities, projects, conversations] = await Promise.all([
+    listMyWishes(),
+    listMyOpportunities(),
+    getProjects(),
+    listMyConversations(),
+  ]);
 
   return (
     <div className="page-wrap pb-10 pt-12 sm:pt-16">
@@ -365,6 +373,16 @@ export default async function MySpacePage({
           </p>
         )}
       </header>
+
+      <Section id="my-correspondence" eyebrow={m.correspondence.eyebrow} title={m.correspondence.title} hint={m.correspondence.hint}>
+        {conversations.length || openConversation ? (
+          <Correspondence conversations={conversations} initialOpen={openConversation} />
+        ) : (
+          <Empty href="/projects" cta={m.correspondence.emptyCta}>
+            {m.correspondence.empty}
+          </Empty>
+        )}
+      </Section>
 
       <Section id="my-wishes" eyebrow={m.wishes.eyebrow} title={m.wishes.title} hint={m.wishes.hint}>
         {wishes.length ? (

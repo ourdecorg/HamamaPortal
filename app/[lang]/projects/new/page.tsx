@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ProjectWizard } from "@/components/ProjectWizard";
-import { getCurrentUser } from "@/lib/auth";
+import { displayNameOf, getCurrentUser } from "@/lib/auth";
 import { getMessages } from "@/lib/i18n/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -19,9 +19,13 @@ export default async function NewProjectPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const sp = await searchParams;
-  const m = (await getMessages()).newProject;
+  const messages = await getMessages();
+  const m = messages.newProject;
   const persist = isSupabaseConfigured();
-  const signedIn = Boolean(await getCurrentUser());
+  const user = await getCurrentUser();
+  const signedIn = Boolean(user);
+  // The first team member starts as the signed-in person (name and email are theirs to change).
+  const me = user?.email ? { name: displayNameOf(user, ""), email: user.email } : undefined;
   // After signing in: "1" publishes the waiting draft, "translate" reopens it at the translation step.
   const resume = !persist ? undefined : sp.resume === "1" ? "publish" : sp.resume === "translate" ? "translate" : undefined;
 
@@ -31,7 +35,7 @@ export default async function NewProjectPage({
         <p className="mb-3 text-sm font-semibold tracking-wide text-leaf-600">{m.eyebrow}</p>
         <h1 className="font-display text-4xl font-semibold leading-tight text-leaf-900 sm:text-6xl">{m.title}</h1>
       </header>
-      <ProjectWizard persist={persist} signedIn={signedIn} resume={resume} />
+      <ProjectWizard persist={persist} signedIn={signedIn} me={me} resume={resume} />
     </div>
   );
 }

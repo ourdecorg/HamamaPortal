@@ -11,6 +11,7 @@ import { ProjectCreatedNotice } from "@/components/ProjectCreatedNotice";
 import { ProjectStewardship } from "@/components/ProjectStewardship";
 import { DemoTag } from "@/components/ProjectCard";
 import { StageBadge } from "@/components/StageBadge";
+import { TeamList } from "@/components/TeamList";
 import { buttonVariants } from "@/components/ui/button";
 import { LOCALE_META, type Locale } from "@/lib/i18n/config";
 import { fmt } from "@/lib/i18n/format";
@@ -61,7 +62,13 @@ export default async function ProjectPage({
   const m = (await getMessages()).project;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
-  const justCreated = (await searchParams).created === "1";
+  const sp = await searchParams;
+  const justCreated = sp.created === "1";
+  // Back from signing in to contact someone: open that window.
+  const autoOpen =
+    typeof sp.contact === "string" && (sp.via === "email" || sp.via === "chat")
+      ? { personId: sp.contact, kind: sp.via as "email" | "chat" }
+      : undefined;
   const connections = await getSuggestedConnections(project.slug, locale);
   const openNeeds = project.current_needs.filter((n) => n.status !== "fulfilled");
   const { website, linkedin, github } = project.links;
@@ -245,27 +252,8 @@ export default async function ProjectPage({
       <section aria-label={m.peopleAria} className="page-wrap pb-6">
         <div className="grid gap-10 border-t border-line-2 pt-12 md:grid-cols-3">
           <div>
-            <h2 className="mb-4 font-sans text-sm font-semibold tracking-wide text-ink-3">{m.stewards}</h2>
-            {project.people.stewards.length ? (
-              <ul className="space-y-4">
-                {project.people.stewards.map((s) => (
-                  <li key={s.name} className="flex items-center gap-3">
-                    <span
-                      aria-hidden="true"
-                      className="grid size-11 place-items-center rounded-full bg-leaf-100 font-display text-lg font-semibold text-leaf-800"
-                    >
-                      {s.name.trim()[0]}
-                    </span>
-                    <span>
-                      <span className="block font-medium text-ink">{s.name}</span>
-                      {s.role && <span className="text-sm text-ink-2">{t(s.role, locale)}</span>}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-ink-3">{m.noStewards}</p>
-            )}
+            <h2 id="team" className="mb-4 scroll-mt-header font-sans text-sm font-semibold tracking-wide text-ink-3">{m.stewards}</h2>
+            <TeamList project={project} autoOpen={autoOpen} />
             <ProjectStewardship project={project} />
           </div>
 

@@ -30,9 +30,11 @@ app/
   connections/page.tsx     every possible connection + needs nobody answers yet
   wishes/                  באר המשאלות (analyse for everyone; "save this wish" needs sign-in)
   login/, auth/            Supabase Auth: Google + magic link, server actions, /auth/callback
-  my-space/                המרחב שלי: my wishes, my projects, my connections
+  my-space/                המרחב שלי: my correspondence, my wishes, my projects, my connections
+  contact/                 email & chat actions; contact/stop: the "stop emails" page
   projects/[slug]/edit/    steward-only: the wizard, pre-filled
   api/projects/route.ts    DEV-ONLY, demo mode: write a wizard JSON file into /data/projects
+  api/mail/                inbound (Resend webhook: email replies), flush (send / retry queued email)
 components/                ProjectCard, NeedBadge, OfferBadge, ConnectionCard, DomainTag,
                            EcosystemPulse, EcosystemMap, SearchBox, …
 proxy.ts                   keeps the Supabase session fresh (not an authorization layer)
@@ -45,6 +47,8 @@ lib/
   projects.ts              data access layer: Supabase at runtime (JSON only in demo mode)
   project-mapper.ts        project ⇄ database rows (shared by the seed, the app and the tests)
   supabase/, auth.ts       Supabase clients and the current user (verified server-side)
+  contacts.ts, conversation.ts  who can be contacted; conversations (never an address)
+  mail/                    Resend client, email templates, outbox worker, reading replies
   matching.ts              connection engine
   discovery.ts             conversational discovery + LLM seam
   search.ts                keyword search with a relevance score
@@ -65,6 +69,10 @@ A malformed record (failed validation) is **skipped and reported**, never fatal.
 3. Someone who looks after the project asks with **אני מטפח/ת את המיזם הזה**; an admin approves (`npm run steward:approve`); from then on they edit it on the site.
 
 In `npm run dev` only, the wizard also has a **save to project folder** button (it writes the JSON file; run the seed afterwards). The route (`app/api/projects/route.ts`) returns 404 outside development, accepts localhost only, refuses cross-origin requests, validates with the same Zod schema, derives the file name from the validated slug, and never overwrites an existing file.
+
+### Contacting people
+
+On an initiative's page, everyone on its team who has an email can be **emailed** through the portal, and people who are registered (marked ✓) can also be **chatted** with. Nobody ever sees anybody's address: emails go out as "Name via Hamama", replies come back through a private reply address into the same conversation, and every conversation is in *המרחב שלי → ההתכתבויות שלי*. Team emails are asked for in the wizard (required for new people) and kept apart from the public project. Setup (Resend): [docs/SUPABASE.md §8](docs/SUPABASE.md#8-contacting-people-email-and-chat).
 
 ### Admin area (`/admin`)
 

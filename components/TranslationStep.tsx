@@ -13,6 +13,7 @@ import {
   ITEM_TEXT_FIELDS,
   itemTextKey,
   machineMark,
+  personTextKey,
   readTexts,
   translationSource,
   writeTexts,
@@ -147,7 +148,6 @@ export function TranslationStep({
     problem: m.intent.problem,
     desired_change: m.intent.change,
     place: m.details.placeAria,
-    steward_role: m.details.role,
   };
   const itemGroups = [
     { kind: "need" as const, title: tm.needsSection, label: m.item.need, list: draft.needs },
@@ -159,6 +159,8 @@ export function TranslationStep({
       const index = group.list.findIndex((it) => key.startsWith(`${group.kind}:${it.uid}:`));
       if (index >= 0) return `${group.label} ${index + 1} · ${key.endsWith(":title") ? m.item[group.kind === "need" ? "needTitle" : "offerTitle"] : m.item.detail}`;
     }
+    const person = draft.people.find((p) => key === personTextKey(p.uid));
+    if (person) return `${person.name.trim() || fmt(m.details.person, { n: draft.people.indexOf(person) + 1 })} · ${m.details.role}`;
     return key;
   }
 
@@ -212,6 +214,9 @@ export function TranslationStep({
   }
 
   const showOptional = (f: DraftTextField) => Boolean(sourceTexts[f]?.trim() || targetTexts[f]?.trim());
+  const rolesToShow = draft.people.filter(
+    (p) => p.name.trim() && (sourceTexts[personTextKey(p.uid)]?.trim() || targetTexts[personTextKey(p.uid)]?.trim()),
+  );
   const itemFilled = (kind: "need" | "offer", it: ItemDraft) =>
     ITEM_TEXT_FIELDS.some((f) => sourceTexts[itemTextKey(kind, it.uid, f)]?.trim() || targetTexts[itemTextKey(kind, it.uid, f)]?.trim());
 
@@ -321,8 +326,16 @@ export function TranslationStep({
           {renderField({ textKey: "problem", label: fieldLabels.problem, multiline: true })}
           {renderField({ textKey: "desired_change", label: fieldLabels.desired_change, multiline: true })}
           {draft.scope && showOptional("place") && renderField({ textKey: "place", label: fieldLabels.place })}
-          {showOptional("steward_role") && renderField({ textKey: "steward_role", label: fieldLabels.steward_role })}
         </fieldset>
+
+        {rolesToShow.length > 0 && (
+          <fieldset className="space-y-7">
+            <legend className="mb-4 text-sm font-semibold tracking-wide text-leaf-600">{tm.peopleSection}</legend>
+            {rolesToShow.map((p) => (
+              <div key={p.uid}>{renderField({ textKey: personTextKey(p.uid), label: `${p.name.trim()} · ${m.details.role}` })}</div>
+            ))}
+          </fieldset>
+        )}
 
         {itemGroups.map((group) => {
           const items = group.list.filter((it) => itemFilled(group.kind, it));
