@@ -7,6 +7,7 @@ import { Link } from "@/components/LocaleLink";
 import { ProjectWizard } from "@/components/ProjectWizard";
 import { buttonVariants } from "@/components/ui/button";
 import { getProjectForAdmin, requireAdminPage } from "@/lib/admin";
+import { getProjectContactEmails } from "@/lib/contacts";
 import { LOCALE_META } from "@/lib/i18n/config";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { t } from "@/lib/locale";
@@ -31,6 +32,7 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ s
   const found = await getProjectForAdmin(slug);
   if (!found) notFound();
   const { project: p, deletedAt } = found;
+  const emails = await getProjectContactEmails(p.id);
   const shown = !deletedAt && p.portal.review_status === "published" && p.portal.visibility !== "private";
   const deletedOn = deletedAt
     ? new Date(deletedAt).toLocaleString(LOCALE_META[locale].dateLocale, { dateStyle: "long", timeStyle: "short" })
@@ -72,7 +74,7 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ s
           {m.editTitle}
         </h2>
         <p className="mb-10 mt-2 max-w-2xl text-ink-2">{m.editBody}</p>
-        <ProjectWizard mode="edit" slug={p.slug} doneHref="/admin/projects" initialDraft={draftFromProject(p, locale)} />
+        <ProjectWizard mode="edit" slug={p.slug} doneHref="/admin/projects" initialDraft={draftFromProject(p, locale, emails)} />
       </section>
     </>
   );

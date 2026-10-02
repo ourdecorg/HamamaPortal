@@ -80,7 +80,12 @@ export const offerSchema = z.object({
   keywords: z.array(z.string()).optional().default([]),
 });
 
+/** A team member's stable id: links them to their private email (never part of the public data). */
+export const PERSON_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
+
 export const stewardSchema = z.object({
+  /** Optional in seed files; every stored team member has one (the database assigns "person-N"). */
+  id: z.string().regex(PERSON_ID_PATTERN).optional(),
   name: nonEmpty,
   role: localizedTextSchema.optional(),
   bio: localizedTextSchema.optional(),

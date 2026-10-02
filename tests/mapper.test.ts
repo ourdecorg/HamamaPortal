@@ -7,7 +7,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { findConnections } from "@/lib/matching";
-import { projectToRows, rowsToProject, type ProjectWithItems } from "@/lib/project-mapper";
+import { projectToRows, rowsToProject, withPersonIds, type ProjectWithItems } from "@/lib/project-mapper";
 import { projectSchema } from "@/lib/schema";
 import { readSeedProjects } from "@/lib/seed-data";
 import { applyDraft, draftFromProject, draftSchema } from "@/lib/wizard";
@@ -33,11 +33,15 @@ function throughDatabase(p: Project): { row: ProjectWithItems; keyById: Map<stri
   return { row, keyById };
 }
 
-/** Compare projects ignoring ids (the database assigns uuids; the JSON key is kept in `key`). */
+/**
+ * Compare projects ignoring ids (the database assigns uuids; the JSON key is kept in `key`). Team members are
+ * compared WITH the ids they get when stored ("person-N" for seed people, who have none in the files).
+ */
 function comparable(p: Project, keyById = new Map<string, string>()) {
   return {
     ...p,
     id: "-",
+    people: { stewards: withPersonIds(p.people.stewards) },
     current_needs: p.current_needs.map((n) => ({ ...n, id: keyById.get(n.id) ?? n.id })),
     offers: p.offers.map((o) => ({ ...o, id: keyById.get(o.id) ?? o.id })),
   };

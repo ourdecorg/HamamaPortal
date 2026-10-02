@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import type { PGlite } from "@electric-sql/pglite";
 import { findConnections } from "@/lib/matching";
-import { projectToRows, rowsToProject, type ProjectWithItems } from "@/lib/project-mapper";
+import { projectToRows, rowsToProject, withPersonIds, type ProjectWithItems } from "@/lib/project-mapper";
 import { projectSchema } from "@/lib/schema";
 import { readSeedProjects } from "@/lib/seed-data";
 import type { Project } from "@/types/project";
@@ -127,6 +127,8 @@ describe("seed import", () => {
         ...p,
         id: "-",
         portal: { ...p.portal, last_updated: "-" },
+        // Stored team members all have an id; seed files leave it out ("person-N" is assigned on import).
+        people: { stewards: withPersonIds(p.people.stewards) },
         current_needs: p.current_needs.map((n) => ({ ...n, id: "-" })),
         offers: p.offers.map((o) => ({ ...o, id: "-" })),
       });

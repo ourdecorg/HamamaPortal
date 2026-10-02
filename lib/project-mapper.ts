@@ -76,6 +76,20 @@ export type ProjectContentPatch = Pick<ProjectRow, (typeof PROJECT_CONTENT_COLUM
 
 // ------------------------------------------------------- project → rows ----
 
+/** Every stored team member has an id; members without one get the first free "person-N". */
+export function withPersonIds(team: Steward[]): Steward[] {
+  const used = new Set(team.map((s) => s.id).filter(Boolean));
+  let n = 0;
+  return team.map((s) => {
+    if (s.id) return s;
+    let id: string;
+    do id = `person-${++n}`;
+    while (used.has(id));
+    used.add(id);
+    return { id, ...s };
+  });
+}
+
 export function projectContent(p: Project): ProjectContentPatch {
   return {
     name: p.name,
@@ -89,7 +103,7 @@ export function projectContent(p: Project): ProjectContentPatch {
     activity_status: p.status.activity_status,
     location: p.geography ?? null,
     collaboration_types: p.collaboration_preferences.types,
-    team: p.people.stewards,
+    team: withPersonIds(p.people.stewards),
     links: p.links,
   };
 }
@@ -156,13 +170,25 @@ export interface CreateProjectArgs {
   p_project: { slug: string } & ProjectContentPatch;
   p_needs: NeedInsert[];
   p_offers: OfferInsert[];
+  /** The team's private emails, by person id (see 20260929120000_contacts.sql). */
+  p_contacts: ContactInput[];
+  /** The language of the notice emails that tell people they were listed. */
+  p_locale: string;
 }
 
-export function projectToCreateArgs(p: Project): CreateProjectArgs {
+/** A team member's private email, as the contacts functions take it. */
+export interface ContactInput {
+  person_id: string;
+  email: string;
+}
+
+export function projectToCreateArgs(p: Project, contacts: ContactInput[] = [], locale = "he"): CreateProjectArgs {
   return {
     p_project: { slug: p.slug, ...projectContent(p) },
     p_needs: p.current_needs.map((n, i) => needToRow(n, i, null)),
     p_offers: p.offers.map((o, i) => offerToRow(o, i, null)),
+    p_contacts: contacts,
+    p_locale: locale,
   };
 }
 

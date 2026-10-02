@@ -3,7 +3,7 @@ import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { getMessagesFor } from "@/lib/i18n/messages";
 import { projectToCreateArgs, type CreateProjectArgs } from "@/lib/project-mapper";
 import { projectSchema } from "@/lib/schema";
-import { buildProject, draftSchema, slugify, validateStep, type StepId } from "@/lib/wizard";
+import { buildProject, draftContacts, draftSchema, slugify, validateStep, type StepId } from "@/lib/wizard";
 
 // ------------------------------------------------------ create in Supabase ---
 
@@ -24,7 +24,9 @@ export function prepareNewProject(rawDraft: unknown, locale: Locale = DEFAULT_LO
   if (!parsed.success) return { ok: false, error: messages.invalidDraft };
 
   const slug = parsed.data.slug.trim() || slugify(parsed.data.name);
-  const draft = { ...parsed.data, slug };
+  // A new initiative has no one "from before": every person on the team needs an email.
+  const people = parsed.data.people.map((person) => ({ ...person, emailOptional: false }));
+  const draft = { ...parsed.data, slug, people };
   for (const step of ["identity", "intent", "details"] as StepId[]) {
     const problems = Object.values(validateStep(step, draft, messages));
     if (problems.length) return { ok: false, error: problems[0] };
@@ -35,5 +37,5 @@ export function prepareNewProject(rawDraft: unknown, locale: Locale = DEFAULT_LO
     const issue = project.error.issues[0];
     return { ok: false, error: `${issue?.path.join(".") || messages.projectFallback}: ${issue?.message ?? messages.invalidValue}` };
   }
-  return { ok: true, slug, args: projectToCreateArgs(project.data) };
+  return { ok: true, slug, args: projectToCreateArgs(project.data, draftContacts(draft), locale) };
 }

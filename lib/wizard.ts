@@ -7,6 +7,7 @@ import {
   lifecycleStageSchema,
   machineMarkSchema,
   needStatusSchema,
+  PERSON_ID_PATTERN,
   projectFileSchema,
 } from "@/lib/schema";
 import type {
@@ -43,7 +44,6 @@ export const DRAFT_TEXT_FIELDS = [
   "problem",
   "desired_change",
   "place",
-  "steward_role",
 ] as const;
 export type DraftTextField = (typeof DRAFT_TEXT_FIELDS)[number];
 export type DraftTexts = Record<DraftTextField, string>;
@@ -66,6 +66,32 @@ export interface ItemDraft {
   translations?: Partial<Record<Locale, ItemTexts>>;
 }
 
+/** The translatable text of a team member. */
+export interface PersonTexts {
+  role: string;
+}
+
+/**
+ * One person on the initiative's team. Name and role are public; the email is private: it is sent to the
+ * server with the draft, stored apart from the project (project_contacts) and never shown to anyone else.
+ */
+export interface PersonDraft {
+  uid: string;
+  /** Stable id on the team (projects.team[].id) — what links the person to their email. */
+  id: string;
+  name: string;
+  email: string;
+  /** In the page's language. */
+  role: string;
+  /** The role in the other languages. */
+  translations?: Partial<Record<Locale, PersonTexts>>;
+  /**
+   * Edit mode: a person saved before emails were asked for. Their email may stay empty (they just cannot be
+   * contacted); the server checks this against the stored project, never trusting the flag.
+   */
+  emailOptional?: boolean;
+}
+
 export interface Draft {
   name: string;
   slug: string;
@@ -86,8 +112,8 @@ export interface Draft {
   website: string;
   linkedin: string;
   github: string;
-  steward_name: string;
-  steward_role: string;
+  /** The team: who looks after the initiative. */
+  people: PersonDraft[];
   /** The text fields above, in the other languages. */
   translations: Partial<Record<Locale, DraftTexts>>;
   /**
@@ -102,6 +128,20 @@ export function newItem(type = "community"): ItemDraft {
   counter += 1;
   return { uid: `item-${counter}-${Math.round(Math.random() * 1e6)}`, type, title: "", description: "", keywords: "" };
 }
+
+/** A new, empty team member with a fresh id. */
+export function newPerson(fill: Partial<Pick<PersonDraft, "name" | "email">> = {}): PersonDraft {
+  counter += 1;
+  const id = `p-${Math.random().toString(36).slice(2, 10).padEnd(8, "0")}`;
+  return { uid: `person-${counter}-${Math.round(Math.random() * 1e6)}`, id, name: "", email: "", role: "", ...fill };
+}
+
+/** The shape of an email address (the same check as the database's). */
+export const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+export const normalizeEmail = (raw: string) => raw.trim().toLowerCase();
+
+/** A team member counts once anything was typed for them; completely empty rows are ignored. */
+export const personFilled = (p: PersonDraft) => Boolean(p.name.trim() || p.email.trim() || p.role.trim());
 
 export const emptyDraft = (): Draft => ({
   name: "",
@@ -123,8 +163,7 @@ export const emptyDraft = (): Draft => ({
   website: "",
   linkedin: "",
   github: "",
-  steward_name: "",
-  steward_role: "",
+  people: [newPerson()],
   translations: {},
   machine: {},
 });
@@ -169,6 +208,11 @@ export function itemTextKey(kind: "need" | "offer", uid: string, field: keyof It
   return `${kind}:${uid}:${field}`;
 }
 
+/** The text key of a team member's role ("person:<uid>:role"). */
+export function personTextKey(uid: string): string {
+  return `person:${uid}:role`;
+}
+
 const markKey = (lang: Locale, key: string) => `${lang}|${key}`;
 
 const emptyTexts = (): DraftTexts => Object.fromEntries(DRAFT_TEXT_FIELDS.map((f) => [f, ""])) as DraftTexts;
@@ -189,6 +233,9 @@ export function readTexts(d: Draft, lang: Locale, page: Locale): Record<string, 
       const texts = lang === page ? item : item.translations?.[lang];
       for (const f of ITEM_TEXT_FIELDS) out[itemTextKey(kind, item.uid, f)] = texts?.[f] ?? "";
     }
+  }
+  for (const person of d.people) {
+    out[personTextKey(person.uid)] = (lang === page ? person.role : person.translations?.[lang]?.role) ?? "";
   }
   return out;
 }
@@ -237,6 +284,18 @@ export function writeTexts(
       }),
     };
   }
+
+  if (d.people.some((person) => has(personTextKey(person.uid)))) {
+    next = {
+      ...next,
+      people: d.people.map((person) => {
+        const key = personTextKey(person.uid);
+        if (!has(key)) return person;
+        if (lang === page) return { ...person, role: values[key] };
+        return { ...person, translations: { ...person.translations, [lang]: { role: values[key] } } };
+      }),
+    };
+  }
   return next;
 }
 
@@ -280,6 +339,15 @@ function itemValues(item: ItemDraft, page: Locale, field: keyof ItemTexts): Loca
   for (const lang of LOCALES) {
     const texts = item.translations?.[lang];
     if (lang !== page && texts) out[lang] = texts[field];
+  }
+  return out;
+}
+
+function roleValues(person: PersonDraft, page: Locale): LocaleValues {
+  const out: LocaleValues = { [page]: person.role };
+  for (const lang of LOCALES) {
+    const texts = person.translations?.[lang];
+    if (lang !== page && texts) out[lang] = texts.role;
   }
   return out;
 }
@@ -350,7 +418,6 @@ export function buildProject(
 
   const taglines = fieldValues(d, locale, "tagline");
   const place = fieldValues(d, locale, "place");
-  const role = fieldValues(d, locale, "steward_role");
 
   const items = (kind: "need" | "offer", list: ItemDraft[]) =>
     list
@@ -379,9 +446,16 @@ export function buildProject(
     status: { lifecycle_stage: d.stage, activity_status: d.activity },
     ...(d.scope ? { geography: { scope: d.scope, ...(hasAny(place) ? { place: field("place") } : {}) } } : {}),
     people: {
-      stewards: d.steward_name.trim()
-        ? [{ name: d.steward_name.trim(), ...(hasAny(role) ? { role: field("steward_role") } : {}) }]
-        : [],
+      stewards: d.people
+        .filter((person) => person.name.trim())
+        .map((person) => {
+          const roles = roleValues(person, locale);
+          return {
+            id: person.id,
+            name: person.name.trim(),
+            ...(hasAny(roles) ? { role: text(personTextKey(person.uid), roles) } : {}),
+          };
+        }),
     },
     current_needs: items("need", d.needs).map((n, i) => ({ id: `need-${i + 1}`, ...n, status: "open" as const })),
     offers: items("offer", d.offers).map((o, i) => ({ id: `offer-${i + 1}`, ...o })),
@@ -419,9 +493,11 @@ function editableText(text: LocalizedText | undefined, lang: Locale, page: Local
   return lang === page && !hasTranslations ? (text.default ?? "").trim() : "";
 }
 
-/** A Draft filled from an existing project, so the wizard can edit it. Main fields are in `locale`. */
-export function draftFromProject(p: Project, locale: Locale = DEFAULT_LOCALE): Draft {
-  const steward = p.people.stewards[0];
+/**
+ * A Draft filled from an existing project, so the wizard can edit it. Main fields are in `locale`.
+ * `emails` are the team's private emails by person id (only stewards and admins can read them).
+ */
+export function draftFromProject(p: Project, locale: Locale = DEFAULT_LOCALE, emails: Record<string, string> = {}): Draft {
   const machine: Record<string, MachineMark> = {};
   const remember = (key: string, text: LocalizedText | undefined) => {
     for (const lang of LOCALES) {
@@ -438,7 +514,6 @@ export function draftFromProject(p: Project, locale: Locale = DEFAULT_LOCALE): D
     problem: p.problem_space.primary_problem,
     desired_change: p.desired_change,
     place: p.geography?.place,
-    steward_role: steward?.role,
   };
   for (const f of DRAFT_TEXT_FIELDS) remember(f, sources[f]);
   const textsIn = (lang: Locale) =>
@@ -476,10 +551,40 @@ export function draftFromProject(p: Project, locale: Locale = DEFAULT_LOCALE): D
     website: p.links.website ?? "",
     linkedin: p.links.linkedin ?? "",
     github: p.links.github ?? "",
-    steward_name: steward?.name ?? "",
+    people: withIds(p.people.stewards).map((s): PersonDraft => {
+      const uid = `person-${s.id}`;
+      remember(personTextKey(uid), s.role);
+      const email = emails[s.id] ?? "";
+      return {
+        uid,
+        id: s.id,
+        name: s.name,
+        email,
+        role: editableText(s.role, locale, locale),
+        translations: Object.fromEntries(others.map((l) => [l, { role: editableText(s.role, l, locale) }])),
+        ...(email ? {} : { emailOptional: true }),
+      };
+    }),
     translations: Object.fromEntries(others.map((l) => [l, textsIn(l)])),
     machine,
   };
+}
+
+/**
+ * Team members with their ids — the ids the database gives members that have none ("person-N", see
+ * withPersonIds in lib/project-mapper.ts; repeated here because this module is also bundled for the browser).
+ */
+function withIds(team: Steward[]): (Steward & { id: string })[] {
+  const used = new Set(team.map((s) => s.id).filter(Boolean));
+  let n = 0;
+  return team.map((s) => {
+    if (s.id) return s as Steward & { id: string };
+    let id: string;
+    do id = `person-${++n}`;
+    while (used.has(id));
+    used.add(id);
+    return { ...s, id };
+  });
 }
 
 /**
@@ -535,12 +640,21 @@ export function applyDraft(original: Project, d: Draft, locale: Locale = DEFAULT
 
   const place = mergeOptional(original.geography?.place, "place", fieldValues(d, locale, "place"));
 
+  /** The team as drafted. A member nobody changed stays exactly as stored; others keep their id (and bio). */
   const stewards = (): Steward[] => {
-    const name = d.steward_name.trim();
-    if (!name) return original.people.stewards;
-    const { role: oldRole, ...rest } = original.people.stewards[0] ?? { name };
-    const role = mergeOptional(oldRole, "steward_role", fieldValues(d, locale, "steward_role"));
-    return [{ ...rest, name, ...(role ? { role } : {}) }, ...original.people.stewards.slice(1)];
+    const before = original.people.stewards;
+    const byId = new Map(withIds(before).map((s, i) => [s.id, before[i]]));
+    return d.people
+      .filter((person) => person.name.trim())
+      .map((person): Steward => {
+        const stored = byId.get(person.id);
+        const name = person.name.trim();
+        const role = mergeOptional(stored?.role, personTextKey(person.uid), roleValues(person, locale));
+        if (stored && stored.name === name && role === stored.role) return stored;
+        const { role: _role, ...rest } = stored ?? { name };
+        void _role;
+        return { ...rest, id: person.id, name, ...(role ? { role } : {}) };
+      });
   };
 
   /** The texts of a need/offer; existing items keep their id. */
@@ -615,11 +729,29 @@ const draftTextsSchema = z.object({
   problem: z.string().max(6000),
   desired_change: z.string().max(6000),
   place: z.string().max(200),
-  steward_role: z.string().max(120),
 });
 
+const personDraftSchema = z.object({
+  uid: z.string().max(120),
+  id: z.string().regex(PERSON_ID_PATTERN),
+  name: z.string().max(120),
+  email: z.string().max(254),
+  role: z.string().max(120),
+  translations: z.partialRecord(localeSchema, z.object({ role: z.string().max(120) })).optional(),
+  emailOptional: z.boolean().optional(),
+});
+
+/** Drafts saved in a browser before teams existed had one `steward_name` / `steward_role`. */
+function upgradeDraft(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || "people" in raw) return raw;
+  const old = raw as { steward_name?: unknown; steward_role?: unknown };
+  const name = typeof old.steward_name === "string" ? old.steward_name : "";
+  const role = typeof old.steward_role === "string" ? old.steward_role : "";
+  return { ...raw, people: [{ ...newPerson({ name }), role }] };
+}
+
 /** Server-side validation of a draft sent from the browser. Never trust the client's shape. */
-export const draftSchema: z.ZodType<Draft> = draftTextsSchema.extend({
+export const draftSchema: z.ZodType<Draft, unknown> = z.preprocess(upgradeDraft, draftTextsSchema.extend({
   slug: z.string().max(80),
   slugTouched: z.boolean(),
   needs: z.array(itemDraftSchema).max(20),
@@ -632,14 +764,17 @@ export const draftSchema: z.ZodType<Draft> = draftTextsSchema.extend({
   website: z.string().max(300),
   linkedin: z.string().max(300),
   github: z.string().max(300),
-  steward_name: z.string().max(120),
+  people: z
+    .array(personDraftSchema)
+    .max(30)
+    .refine((people) => new Set(people.map((p) => p.id)).size === people.length, "duplicate person id"),
   // Drafts saved in a browser before bilingual editing existed have neither of these.
   translations: z.partialRecord(localeSchema, draftTextsSchema).default({}),
   machine: z
     .record(z.string().max(200), machineMarkSchema)
     .refine((marks) => Object.keys(marks).length <= 400, "too many translation marks")
     .default({}),
-});
+}));
 
 export type StepId = "identity" | "intent" | "needs" | "offers" | "details" | "translation" | "review";
 
@@ -671,8 +806,24 @@ export function validateStep(step: StepId, d: Draft, messages: WizardErrors): Re
   }
   if (step === "details") {
     if (d.domains.length === 0) errors.domains = messages.domains;
+    for (const person of d.people.filter(personFilled)) {
+      if (!person.name.trim()) errors[`person:${person.uid}:name`] = messages.personName;
+      const email = normalizeEmail(person.email);
+      if (!email) {
+        if (!person.emailOptional) errors[`person:${person.uid}:email`] = messages.personEmail;
+      } else if (!EMAIL_PATTERN.test(email) || email.length > 254) {
+        errors[`person:${person.uid}:email`] = messages.personEmailInvalid;
+      }
+    }
   }
   return errors;
+}
+
+/** The team's private emails, as the database takes them: one per named person who has an email. */
+export function draftContacts(d: Draft): { person_id: string; email: string }[] {
+  return d.people
+    .filter((person) => person.name.trim() && person.email.trim())
+    .map((person) => ({ person_id: person.id, email: normalizeEmail(person.email) }));
 }
 
 export function validateFile(file: ProjectFile): string[] {
